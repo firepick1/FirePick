@@ -1,4 +1,7 @@
-firepick
+FirePick
 ========
 
-www.firepick.org GitHub 
+GitHub repository and wiki for http://www.firepick.org 
+
+Hello!
+
