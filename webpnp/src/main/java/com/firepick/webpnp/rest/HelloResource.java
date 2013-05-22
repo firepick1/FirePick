@@ -3,6 +3,7 @@ package com.firepick.webpnp.rest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import java.util.Date;
 
 @Path("/helloworld")
 public class HelloResource {
@@ -10,7 +11,7 @@ public class HelloResource {
     @GET
     @Produces("text/plain")
     public String getClichedMessage() {
-        // Return some cliched textual content
-        return "Hello World";
+        Date date = new Date();
+        return "Hello World" + date;
     }
 }
