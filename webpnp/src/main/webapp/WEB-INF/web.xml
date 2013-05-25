@@ -1,7 +1,7 @@
 <web-app>
-    <display-name>Archetype Created Web Application</display-name>
+    <display-name>webpnp</display-name>
     <servlet>
-        <servlet-name>watermelon</servlet-name>
+        <servlet-name>rest</servlet-name>
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>com.sun.jersey.config.property.packages</param-name>
