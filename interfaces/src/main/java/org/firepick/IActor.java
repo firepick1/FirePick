@@ -22,7 +22,20 @@ package org.firepick;
  */
 
 /**
- * A resource that can only participate in one IAction at a time
+ * A resource that can only participate in one Action at a time
  */
-public interface IActor {
+public interface IActor extends Comparable<IActor>{
+    /**
+     * The name of an actor should correspond to its GCode name where applicable
+     * For example, a Positioner for the x-axis should have a name, "X".
+     * @return the action name
+     */
+    String getName();
+
+    /**
+     * The group of an actor is a name shared by all actors in the group.
+     * The group corresponds to the driver (e.g., "TinyG")
+     * @return
+     */
+    String getGroup();
 }

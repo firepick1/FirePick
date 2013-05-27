@@ -1,4 +1,4 @@
-package org.firepick.action;
+package org.firepick;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,16 +21,12 @@ package org.firepick.action;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.IAction;
 
-public interface IActionFactory {
+/**
+ * Representation for an IActor (e.g., motor) having a particular value (e.g., position)
+ */
+public interface IActorState extends Comparable<IActorState> {
+    IActor getActor();
 
-    /**
-     * Compose the two given actions
-     *
-     * @param a1 first action to compose
-     * @param a2 second action to compose
-     * @return the composition of the given actions or null
-     */
-    IAction compose(IAction a1, IAction a2);
+    Object getValue();
 }

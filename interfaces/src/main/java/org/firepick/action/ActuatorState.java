@@ -21,46 +21,50 @@ package org.firepick.action;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.IAction;
 import org.firepick.IActor;
+import org.firepick.IActorState;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+public class ActuatorState implements IActorState {
+    private Actuator actuator;
+    private String state;
 
-public class ActionBase implements IAction {
-    protected Collection<IActor> actors = new ArrayList<IActor>();
-    private long durationMillis;
-    private String name;
+    public ActuatorState(Actuator actuator, String state) {
+        this.state = state;
+        this.actuator = actuator;
+    }
 
-    protected ActionBase(String name) {
-        this.name = name;
+    public String getState() {
+        return state;
+    }
+
+    public Actuator getActuator() {
+        return actuator;
+    }
+
+    public String toString() {
+        return actuator.getName() + ":" + state;
     }
 
     @Override
-    public void execute() {
-        throw new UnsupportedOperationException();
+    public int compareTo(IActorState that) {
+        if (that instanceof ActuatorState) {
+            ActuatorState thatState = (ActuatorState) that;
+            int cmp = getActuator().compareTo(thatState.getActuator());
+            if (cmp == 0) {
+                cmp = getState().compareTo(thatState.getState());
+            }
+            return cmp;
+        }
+        return getClass().toString().compareTo(that.getClass().toString());
     }
 
     @Override
-    public Collection<IActor> getActors() {
-        return Collections.unmodifiableCollection(actors);
+    public IActor getActor() {
+        return actuator;
     }
 
     @Override
-    public long getDurationMillis() {
-        return durationMillis;
-    }
-
-    public void setDurationMillis(long durationMillis) {
-        this.durationMillis = durationMillis;
-    }
-
-    protected void addActor(IActor value) {
-        actors.add(value);
-    }
-
-    public String getName() {
-        return name;
+    public Object getValue() {
+        return state;
     }
 }

@@ -22,51 +22,33 @@ package org.firepick.action;
  */
 
 import org.firepick.IActor;
-import org.firepick.IActorState;
 
-public class Position implements IActorState {
+public abstract class AbstractActor implements IActor, Comparable<IActor> {
+    protected String name;
+    protected String group;
 
-
-    private Positioner positioner;
-    private double position;
-
-    public Position(Positioner positioner, double position) {
-        this.position = position;
-        this.positioner = positioner;
+    public AbstractActor(String name, String group) {
+        this.group = group;
+        this.name = name;
     }
 
-    public double getPosition() {
-        return position;
+    @Override
+    public String getName() {
+        return name;
     }
 
-    public Positioner getPositioner() {
-        return positioner;
+    @Override
+    public String getGroup() {
+        return group;
     }
 
+    @Override
     public String toString() {
-        return positioner.getName() + position;
+        return getGroup() + "." + getName();
     }
 
     @Override
-    public int compareTo(IActorState that) {
-        if (that instanceof Position) {
-            Position thatPosition = (Position) that;
-            int cmp = getPositioner().compareTo(thatPosition.getPositioner());
-            if (cmp == 0) {
-                cmp = Double.compare(getPosition(), thatPosition.getPosition());
-            }
-            return cmp;
-        }
-        return getClass().toString().compareTo(that.getClass().toString());
-    }
-
-    @Override
-    public IActor getActor() {
-        return positioner;
-    }
-
-    @Override
-    public Object getValue() {
-        return position;
+    public int compareTo(IActor that) {
+        return getName().compareTo(that.getName());
     }
 }

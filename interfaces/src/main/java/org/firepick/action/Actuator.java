@@ -23,11 +23,10 @@ package org.firepick.action;
 
 import org.firepick.IActor;
 
-public class Positioner extends AbstractActor {
+public class Actuator extends AbstractActor {
 
-    public Positioner(String name, String group) {
+    public Actuator(String name, String group) {
         super(name, group);
     }
-
 
 }

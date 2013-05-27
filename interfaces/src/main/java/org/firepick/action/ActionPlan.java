@@ -1,4 +1,4 @@
-package org.firepick;
+package org.firepick.action;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,18 +21,37 @@ package org.firepick;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
-/**
- * An action requiring exclusive involvement of one or more IActor's
- */
-public interface IAction {
-    void execute();
+public class ActionPlan implements Iterable<Action> {
+    private List<Action> actions = new ArrayList<Action>();
 
-    Collection<IActor> getActors();
+    public ActionPlan(){}
 
-    String getName();
+    public ActionPlan(Iterator<Action> sourceActions) {
+        while (sourceActions.hasNext()) {
+            actions.add(sourceActions.next());
+        }
+    }
 
-    long getDurationMillis();
+    public ActionPlan add(Action action) {
+        actions.add(action);
+        return this;
+    }
+
+    public int size() {
+        return actions.size();
+    }
+
+    @Override
+    public Iterator<Action> iterator() {
+        return actions.iterator();
+    }
+
+    public ListIterator<Action> listIterator() {
+        return actions.listIterator();
+    }
 }
-

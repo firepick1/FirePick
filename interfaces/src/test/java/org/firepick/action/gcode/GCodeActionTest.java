@@ -22,54 +22,57 @@ package org.firepick.action.gcode;
  */
 
 
-import org.firepick.IAction;
+import org.firepick.action.Action;
 import org.firepick.action.Positioner;
 import org.junit.Before;
 import org.junit.Test;
 
+import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class GCodeActionTest {
-    Positioner xAxis;
-    Positioner yAxis;
-    Positioner zAxis;
-    Positioner aAxis;
-    Positioner bAxis;
-    Positioner cAxis;
 
     @Before
     public void setup() throws Exception {
-        xAxis = new Positioner("X");
-        yAxis = new Positioner("Y");
-        zAxis = new Positioner("Z");
-        aAxis = new Positioner("A");
-        bAxis = new Positioner("B");
-        cAxis = new Positioner("C");
     }
 
     @Test
     public void testGCodeRapicMove() throws Exception {
-        GCodeActionFactory factory = new GCodeActionFactory();
+        Positioner xAxis = new Positioner("X", "tinyg");
+        Positioner yAxis = new Positioner("Y", "tinyg");
+        Positioner zAxis = new Positioner("Z", "tinyg");
+        GCodeFactory factory = new GCodeFactory();
 
-        IAction action = factory.createMove(true)
-                .withPosition(zAxis, 3.3)
-                .withPosition(yAxis, 2.2)
-                .withPosition(xAxis, 1.1);
-        assertEquals("G0 X1.1Y2.2Z3.3", action.toString());
+        Action action = new Action("Move gantry")
+                .addPosition(zAxis, 3.3)
+                .addPosition(yAxis, 2.2)
+                .addPosition(xAxis, 1.1);
+        assertEquals("G0 X1.1Y2.2Z3.3", factory.rapidMove(action, "tinyg"));
     }
 
     @Test
     public void testGCodeActionFactory() throws Exception {
-        GCodeActionFactory factory = new GCodeActionFactory();
-        IAction a1 = factory.createMove(false).withPosition(xAxis, 1.1).withPosition(zAxis, 3.3).withDurationMillis(100);
-        IAction a2 = factory.createMove(false).withPosition(yAxis, 2.2).withDurationMillis(200);
-        IAction a3 = factory.createMove(false).withPosition(xAxis, 9.9).withDurationMillis(300);
+        Positioner feeder1 = new Positioner("X", "tinyg");
+        Positioner gantry1 = new Positioner("Y", "tinyg");
+        Positioner gantry2 = new Positioner("Z", "tinyg");
+        GCodeFactory factory = new GCodeFactory();
+        Action a1 = new Action("Move gantry1 to feeder1").addPosition(feeder1, 1).addPosition(gantry1, 2).setDurationMillis(100);
+        Action a2 = new Action("Move gantry2 to feeder1").addPosition(feeder1, 1).addPosition(gantry2, 3).setDurationMillis(200);
+        Action a3 = new Action("Move feeder1").addPosition(feeder1, 9).setDurationMillis(300);
 
-        IAction a1a2 = factory.compose(a1, a2);
-        assertEquals("G1 X1.1Y2.2Z3.3", a1a2.toString());
+        // Actions a1 and a2 can be combined into a single action
+        Action a1a2 = a1.withAction(a2);
+        assertEquals(3, a1a2.getActors().size());
+        assert(a1a2.getActors().contains(feeder1));
+        assert(a1a2.getActors().contains(gantry1));
+        assert(a1a2.getActors().contains(gantry2));
+        assertNotNull(a1a2);
+        assertEquals("G0 X1.0Y2.0Z3.0", factory.rapidMove(a1a2, "tinyg"));
         assertEquals(200, a1a2.getDurationMillis());
-        IAction a1a3 = factory.compose(a1, a3);
+
+        // Actions a1 and a3 cannot be combined because they use feeder1 in different ways
+        Action a1a3 = a1.withAction(a3);
         assertNull(a1a3);
     }
 
