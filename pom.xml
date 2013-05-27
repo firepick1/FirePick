@@ -11,6 +11,5 @@
 			<module>webpnp</module>
 			<module>../openpnp/gui</module>
             <module>interfaces</module>
-            <module>interfaces</module>
         </modules>
 </project>
