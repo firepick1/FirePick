@@ -21,7 +21,6 @@ package org.firepick.action.gcode;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import junit.framework.Assert;
 import org.firepick.action.Action;
 import org.firepick.action.ActionPlan;
 import org.firepick.action.ConcurrentActionIterator;
@@ -32,13 +31,13 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ActionIteratorTest {
     Positioner xAxis = new Positioner("X", "tinyg");
     Positioner yAxis = new Positioner("Y", "tinyg");
-    Positioner zAxis = new Positioner("Z", "tinyg");
     Positioner rotateAxis = new Positioner("A", "EasyDriver");
 
     @Test
@@ -53,7 +52,7 @@ public class ActionIteratorTest {
         plan1.add(new Action("S1").addPosition(xAxis, 1));
         assertEquals(1, plan1.size());
         ConcurrentActionIterator iterator1 = new ConcurrentActionIterator(plan1);
-        assert (iterator1.hasNext());
+        assertTrue(iterator1.hasNext());
         Action action1_0 = iterator1.next();
         assertFalse(iterator1.hasNext());
         assertEquals("S1", action1_0.getName());
@@ -63,7 +62,7 @@ public class ActionIteratorTest {
         plan2.add(new Action("S2").addPosition(yAxis, 2));
         assertEquals(2, plan2.size());
         ConcurrentActionIterator iterator2 = new ConcurrentActionIterator(plan2);
-        assert (iterator2.hasNext());
+        assertTrue (iterator2.hasNext());
         Action action2_0 = iterator2.next();
         assertEquals("S1; S2", action2_0.getName());
         assertFalse(iterator2.hasNext());
@@ -74,10 +73,10 @@ public class ActionIteratorTest {
         plan3.add(new Action("S3").addPosition(xAxis, 3));
         assertEquals(3, plan3.size());
         ConcurrentActionIterator iterator3 = new ConcurrentActionIterator(plan3);
-        assert (iterator3.hasNext());
+        assertTrue (iterator3.hasNext());
         Action action3_0 = iterator3.next();
         assertEquals("S1; S2", action3_0.getName());
-        assert (iterator3.hasNext());
+        assertTrue (iterator3.hasNext());
         Action action3_1 = iterator3.next();
         assertEquals("S3", action3_1.getName());
         assertFalse(iterator3.hasNext());
@@ -92,16 +91,16 @@ public class ActionIteratorTest {
         plan4.add(new Action("S4").addPosition(yAxis, 4));
         assertEquals(4, plan4.size());
         ConcurrentActionIterator iterato44 = new ConcurrentActionIterator(plan4);
-        assert (iterato44.hasNext());
+        assertTrue (iterato44.hasNext());
         Action action3_0 = iterato44.next();
         assertEquals("S1; S2", action3_0.getName());
-        assert (iterato44.hasNext());
+        assertTrue (iterato44.hasNext());
 
         iterato44.setConcurrent(false);
-        assert (iterato44.hasNext());
+        assertTrue (iterato44.hasNext());
         Action action3_1 = iterato44.next();
         assertEquals("S3", action3_1.getName());
-        assert (iterato44.hasNext());
+        assertTrue (iterato44.hasNext());
         Action action3_2 = iterato44.next();
         assertEquals("S4", action3_2.getName());
         assertFalse(iterato44.hasNext());
@@ -118,17 +117,16 @@ public class ActionIteratorTest {
         ConcurrentActionIterator iterator4 = new ConcurrentActionIterator(plan4);
         testListIterator(iterator4);
 
-        ConcurrentActionIterator iterator = (ConcurrentActionIterator) iterator4;
-        iterator.setConcurrent(false);
-        assert (iterator4.hasNext());
+        iterator4.setConcurrent(false);
+        assertTrue (iterator4.hasNext());
         Action action3_1 = iterator4.next();
         assertEquals("S3", action3_1.getName());
-        assert (iterator4.hasNext());
+        assertTrue (iterator4.hasNext());
         Action action3_2 = iterator4.next();
         assertEquals("S4", action3_2.getName());
         assertEquals(2, iterator4.previousIndex());
         assertEquals(3, iterator4.nextIndex());
-        assert (iterator4.hasPrevious());
+        assertTrue (iterator4.hasPrevious());
         assertFalse(iterator4.hasNext());
     }
 
@@ -144,10 +142,10 @@ public class ActionIteratorTest {
         ListIterator<Action> iterator4 = plan4Concurrent.listIterator();
         testListIterator(iterator4);
 
-        assert (iterator4.hasNext());
+        assertTrue (iterator4.hasNext());
         Action action3_1 = iterator4.next();
         assertEquals("S3; S4", action3_1.getName());
-        assert (iterator4.hasPrevious());
+        assertTrue (iterator4.hasPrevious());
         assertFalse(iterator4.hasNext());
         assertEquals(1, iterator4.previousIndex());
         assertEquals(2, iterator4.nextIndex());
@@ -157,26 +155,26 @@ public class ActionIteratorTest {
         assertEquals(-1, iterator4.previousIndex());
         assertEquals(0, iterator4.nextIndex());
         assertFalse(iterator4.hasPrevious());
-        assert (iterator4.hasNext());
+        assertTrue (iterator4.hasNext());
         Exception caughtException = null;
         try {
             iterator4.previous();
         } catch (Exception e) {
             caughtException = e;
         }
-        assert (caughtException instanceof NoSuchElementException);
+        assertTrue (caughtException instanceof NoSuchElementException);
 
         Action action3_0 = iterator4.next();
         assertEquals(0, iterator4.previousIndex());
         assertEquals(1, iterator4.nextIndex());
         assertEquals("S1; S2", action3_0.getName());
-        assert (iterator4.hasPrevious());
-        assert (iterator4.hasNext());
+        assertTrue (iterator4.hasPrevious());
+        assertTrue (iterator4.hasNext());
         assertEquals(action3_0, iterator4.previous());
         assertEquals(-1, iterator4.previousIndex());
         assertEquals(0, iterator4.nextIndex());
         assertFalse(iterator4.hasPrevious());
-        assert (iterator4.hasNext());
+        assertTrue (iterator4.hasNext());
         assertEquals(action3_0, iterator4.next());
     }
 
@@ -186,9 +184,9 @@ public class ActionIteratorTest {
                 .addPosition(xAxis, 1)
                 .addPosition(rotateAxis, 180);
         Set<String> groups = action.getGroups();
-        Assert.assertEquals(2, groups.size());
-        assert(groups.contains("tinyg"));
-        assert(groups.contains("EasyDriver"));
+        assertEquals(2, groups.size());
+        assertTrue(groups.contains("tinyg"));
+        assertTrue(groups.contains("EasyDriver"));
     }
 
 }
