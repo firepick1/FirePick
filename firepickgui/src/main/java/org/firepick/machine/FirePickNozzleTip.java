@@ -1,6 +1,6 @@
 package org.firepick.machine;
 /*
-    Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
+	Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
     
     This file is part of FirePick Software.
@@ -21,33 +21,11 @@ package org.firepick.machine;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.openpnp.gui.support.Wizard;
-import org.openpnp.machine.reference.feeder.ReferenceTrayFeeder;
-import org.openpnp.model.Location;
-import org.openpnp.model.Part;
-import org.openpnp.spi.Head;
-import org.openpnp.spi.Nozzle;
+import org.openpnp.machine.reference.ReferenceNozzleTip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("unused")
-public class FirePickTrayFeeder extends ReferenceTrayFeeder {
-    Logger logger = LoggerFactory.getLogger(FirePickTrayFeeder.class);
-	private FirePickMachine firepick = FirePickMachine.getInstance();
-	private Nozzle lastNozzle;
+public class FirePickNozzleTip extends ReferenceNozzleTip {
+	Logger logger = LoggerFactory.getLogger(FirePickNozzleTip.class);
 
-    @Override
-    public boolean canFeedToNozzle(Nozzle nozzle) {
-		boolean result = super.canFeedToNozzle(nozzle);
-		if (firepick.hasAlternateNozzle(nozzle, getPart())) {
-			if (nozzle == lastNozzle) {
-				result = false;
-			}
-		}
-		if (result) {
-			lastNozzle = nozzle;
-		}
-		logger.debug("{}.canFeedToNozzle({}) => {}", new Object[]{getId(), nozzle, result});
-		return result;
-    }
 }
