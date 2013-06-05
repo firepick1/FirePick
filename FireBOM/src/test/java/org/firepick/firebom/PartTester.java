@@ -23,29 +23,37 @@ package org.firepick.firebom;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.regex.Pattern;
 
-public class ShapewaysPart extends Part {
-    private static Pattern startId = Pattern.compile("<title>");
-    private static Pattern endId = Pattern.compile(" ");
-    private static Pattern startPrice = Pattern.compile(" <div class=\"price\">\\$");
-    private static Pattern endPrice = Pattern.compile("</div>");
+import static org.junit.Assert.assertEquals;
 
-    public ShapewaysPart(PartFactory partFactory, URL url) throws IOException {
-        super(partFactory);
-        setUrl(url);
+public class PartTester {
+    private URL url;
+    private Part part;
+
+    public PartTester(String url) throws IOException {
+        this.url = new URL(url);
+        part = new PartFactory().createPart(this.url);
+        part.validate();
+        assert(part.isValid());
     }
 
-    @Override
-    protected void update() throws IOException {
-        String content = partFactory.urlContents(getUrl());
-        String price = partFactory.scrapeText(content, startPrice, endPrice);
-        if (price != null) {
-            setPackageCost(Double.parseDouble(price));
-        }
-        String id = partFactory.scrapeText(content, startId, endId);
-        if (id != null) {
-            setId(id);
-        }
+    public PartTester testId(String id) {
+        assertEquals(id, part.getId());
+        return this;
+    }
+
+    public PartTester testUnitCost(double value) {
+        assertEquals(value, part.getUnitCost(), 0);
+        return this;
+    }
+
+    public PartTester testPackageCost(double value) {
+        assertEquals(value, part.getPackageCost(), 0);
+        return this;
+    }
+
+    public PartTester testPackageUnits(double value) {
+        assertEquals(value, part.getPackageUnits(), 0);
+        return this;
     }
 }

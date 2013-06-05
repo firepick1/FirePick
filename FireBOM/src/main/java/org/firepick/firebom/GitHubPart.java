@@ -25,13 +25,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-public class ShapewaysPart extends Part {
-    private static Pattern startId = Pattern.compile("<title>");
-    private static Pattern endId = Pattern.compile(" ");
-    private static Pattern startPrice = Pattern.compile(" <div class=\"price\">\\$");
-    private static Pattern endPrice = Pattern.compile("</div>");
+public class GitHubPart extends Part {
+    private static Pattern startSource = Pattern.compile("<a\\s+href=\"");
+    private static Pattern endSource = Pattern.compile("\"");
+    private static Pattern startTitle = Pattern.compile("<title>");
+    private static Pattern endTitle = Pattern.compile("[< ]");
 
-    public ShapewaysPart(PartFactory partFactory, URL url) throws IOException {
+    public GitHubPart(PartFactory partFactory, URL url) throws IOException {
         super(partFactory);
         setUrl(url);
     }
@@ -39,13 +39,21 @@ public class ShapewaysPart extends Part {
     @Override
     protected void update() throws IOException {
         String content = partFactory.urlContents(getUrl());
-        String price = partFactory.scrapeText(content, startPrice, endPrice);
-        if (price != null) {
-            setPackageCost(Double.parseDouble(price));
-        }
-        String id = partFactory.scrapeText(content, startId, endId);
-        if (id != null) {
-            setId(id);
+        String title = partFactory.scrapeText(content, startTitle, endTitle);
+        setId(title);
+        String [] ulParts = content.split("<ul>");
+
+        boolean sourcesFound = false;
+        for (String ulPart: ulParts) {
+            if (ulPart.contains("@Sources")) {
+                sourcesFound = true;
+            } else if (sourcesFound) {
+                String [] liParts = ulPart.split("</li>");
+                String sourceUrl = partFactory.scrapeText(liParts[0], startSource, endSource);
+                Part sourcePart = partFactory.createPart(new URL(sourceUrl));
+                setPackageCost(sourcePart.getUnitCost());
+                break;
+            }
         }
     }
 }

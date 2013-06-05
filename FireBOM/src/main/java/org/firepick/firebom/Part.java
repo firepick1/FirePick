@@ -25,16 +25,20 @@ import java.io.IOException;
 import java.net.URL;
 
 public abstract class Part {
+    protected final PartFactory partFactory;
     private String id;
     private URL url;
     private double packageCost;
     private double packageUnits;
+    private boolean isValid;
 
-    public Part() {
+    public Part(PartFactory partFactory) {
+        this.partFactory = partFactory;
         setPackageUnits(1);
     }
 
     public String getId() {
+        validate();
         return id;
     }
 
@@ -53,6 +57,7 @@ public abstract class Part {
     }
 
     public double getPackageCost() {
+        validate();
         return packageCost;
     }
 
@@ -62,20 +67,42 @@ public abstract class Part {
     }
 
     public double getPackageUnits() {
+        validate();
         return packageUnits;
     }
 
     public Part setPackageUnits(double packageUnits) {
-        this.packageUnits = packageUnits;
+        this.packageUnits = Math.max(1, packageUnits);
         return this;
     }
 
     public double getUnitCost() {
+        validate();
         return getPackageCost() / getPackageUnits();
+    }
+
+    public synchronized void validate()  {
+        if (!isValid) {
+            try {
+                update();
+            }
+            catch (IOException e) {
+                throw new RuntimeException("Could not validate part from " + url, e);
+            }
+            setValid(true);
+        }
     }
 
     /**
      * Update part information from web
      */
-    abstract public void update() throws IOException;
+    protected abstract void update() throws IOException;
+
+    public boolean isValid() {
+        return isValid;
+    }
+
+    public void setValid(boolean valid) {
+        isValid = valid;
+    }
 }

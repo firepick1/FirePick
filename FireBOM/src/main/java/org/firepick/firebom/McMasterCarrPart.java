@@ -25,27 +25,32 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-public class ShapewaysPart extends Part {
-    private static Pattern startId = Pattern.compile("<title>");
-    private static Pattern endId = Pattern.compile(" ");
-    private static Pattern startPrice = Pattern.compile(" <div class=\"price\">\\$");
-    private static Pattern endPrice = Pattern.compile("</div>");
+public class McMasterCarrPart extends Part {
+    private static Pattern startPrice = Pattern.compile("\"PrceTxt\":\"");
+    private static Pattern endPrice = Pattern.compile("\"");
+    private static Pattern startPackageUnits = Pattern.compile("\"SellStdPkgQty\":");
+    private static Pattern endPackageUnits = Pattern.compile(",");
+    private static String queryUrlTemplate =
+            "http://www.mcmaster.com/WebParts/Ordering/InLnOrdWebPart/InLnOrdWebPart.aspx?cntnridtxt=InLnOrd_ItmBxRw_1_{PART}&partnbrtxt={PART}&multipartnbrind=false&partnbrslctdmsgcntxtnm=FullPrsnttn&autoslctdind=false";
 
-    public ShapewaysPart(PartFactory partFactory, URL url) throws IOException {
+    public McMasterCarrPart(PartFactory partFactory, URL url) throws IOException {
         super(partFactory);
         setUrl(url);
     }
 
     @Override
     protected void update() throws IOException {
-        String content = partFactory.urlContents(getUrl());
+        String partNum = getUrl().toString().replace("http://www.mcmaster.com/#", "");
+        String queryUrl = queryUrlTemplate.replaceAll("\\{PART\\}", partNum);
+        String content = partFactory.urlContents(new URL(queryUrl));
         String price = partFactory.scrapeText(content, startPrice, endPrice);
         if (price != null) {
             setPackageCost(Double.parseDouble(price));
         }
-        String id = partFactory.scrapeText(content, startId, endId);
-        if (id != null) {
-            setId(id);
+        String packageUnits = partFactory.scrapeText(content, startPackageUnits, endPackageUnits);
+        if (packageUnits != null) {
+            setPackageUnits(Double.parseDouble(packageUnits));
         }
+        setId(partNum);
     }
 }
