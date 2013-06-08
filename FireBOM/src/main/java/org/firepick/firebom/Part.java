@@ -29,12 +29,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public abstract class Part {
+public abstract class Part implements IPartComparable {
     private static Pattern startLink = Pattern.compile("<a\\s+href=\"");
     private static Pattern endLink = Pattern.compile("\"");
     protected final PartFactory partFactory;
     protected List<PartUsage> requiredParts;
     private String id;
+    private String title;
     private URL url;
     private double packageCost;
     private double packageUnits;
@@ -149,5 +150,24 @@ public abstract class Part {
 
     public List<PartUsage> getRequiredParts() {
         return Collections.unmodifiableList(requiredParts);
+    }
+
+    public String getTitle() {
+        return title == null ? getId() : title;
+    }
+
+    public Part setTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    @Override
+    public Part getPart() {
+        return this;
+    }
+
+    @Override
+    public int compareTo(IPartComparable that) {
+        return getId().compareTo(that.getPart().getId());
     }
 }
