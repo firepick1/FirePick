@@ -22,10 +22,18 @@ package org.firepick.firebom;
  */
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public abstract class Part {
+    private static Pattern startLink = Pattern.compile("<a\\s+href=\"");
+    private static Pattern endLink = Pattern.compile("\"");
     protected final PartFactory partFactory;
+    protected List<PartUsage> requiredParts;
     private String id;
     private URL url;
     private double packageCost;
@@ -35,6 +43,12 @@ public abstract class Part {
     public Part(PartFactory partFactory) {
         this.partFactory = partFactory;
         setPackageUnits(1);
+        requiredParts = new ArrayList<PartUsage>();
+    }
+
+    public Part(PartFactory partFactory, URL url) {
+        this(partFactory);
+        this.url = url;
     }
 
     public String getId() {
@@ -81,7 +95,7 @@ public abstract class Part {
         return getPackageCost() / getPackageUnits();
     }
 
-    public synchronized void validate()  {
+    public synchronized void validate() {
         if (!isValid) {
             try {
                 update();
@@ -104,5 +118,36 @@ public abstract class Part {
 
     public void setValid(boolean valid) {
         isValid = valid;
+    }
+
+    protected List<String> parseListItemStrings(String ul) throws IOException {
+        List<String> result = new ArrayList<String>();
+        String[] liParts = ul.split("</li>");
+        for (String li : liParts) {
+            String[] items = li.split("<li>");
+            result.add(items[1]);
+        }
+        return result;
+    }
+
+    protected URL parseLink(String value) throws MalformedURLException {
+        String url = partFactory.scrapeText(value, startLink, endLink);
+        return new URL(getUrl(), url);
+    }
+
+    protected double parseQuantity(String value, double defaultValue) {
+        double result = defaultValue;
+
+        String[] phrases = value.split("\\(");
+        if (phrases.length > 1) {
+            String quantity = phrases[phrases.length - 1].split("\\)")[0];
+            result = Double.parseDouble(quantity);
+        }
+
+        return result;
+    }
+
+    public List<PartUsage> getRequiredParts() {
+        return Collections.unmodifiableList(requiredParts);
     }
 }

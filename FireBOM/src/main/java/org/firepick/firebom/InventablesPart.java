@@ -25,32 +25,27 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-public class McMasterCarrPart extends Part {
-    private static Pattern startPrice = Pattern.compile("\"PrceTxt\":\"");
-    private static Pattern endPrice = Pattern.compile("\"");
-    private static Pattern startPackageUnits = Pattern.compile("\"SellStdPkgQty\":");
-    private static Pattern endPackageUnits = Pattern.compile(",");
-    private static String queryUrlTemplate =
-            "http://www.mcmaster.com/WebParts/Ordering/InLnOrdWebPart/InLnOrdWebPart.aspx?cntnridtxt=InLnOrd_ItmBxRw_1_{PART}&partnbrtxt={PART}&multipartnbrind=false&partnbrslctdmsgcntxtnm=FullPrsnttn&autoslctdind=false";
+public class InventablesPart extends Part {
+    private static Pattern startId = Pattern.compile("<label for=\"sample_cart_item_sample_id_[0-9]*\">");
+    private static Pattern endId = Pattern.compile("</label>");
+    private static Pattern startPrice = Pattern.compile("<td>\\$");
+    private static Pattern endPrice = Pattern.compile("</td>");
 
-    public McMasterCarrPart(PartFactory partFactory, URL url) throws IOException {
+    public InventablesPart(PartFactory partFactory, URL url) throws IOException {
         super(partFactory);
         setUrl(url);
     }
 
     @Override
     protected void update() throws IOException {
-        String partNum = getUrl().toString().replace("http://www.mcmaster.com/#", "");
-        String queryUrl = queryUrlTemplate.replaceAll("\\{PART\\}", partNum);
-        String content = partFactory.urlTextContent(new URL(queryUrl));
+        String content = partFactory.urlTextContent(getUrl());
         String price = partFactory.scrapeText(content, startPrice, endPrice);
         if (price != null) {
             setPackageCost(Double.parseDouble(price));
         }
-        String packageUnits = partFactory.scrapeText(content, startPackageUnits, endPackageUnits);
-        if (packageUnits != null) {
-            setPackageUnits(Double.parseDouble(packageUnits));
+        String id = partFactory.scrapeText(content, startId, endId);
+        if (id != null) {
+            setId(id);
         }
-        setId(partNum);
     }
 }

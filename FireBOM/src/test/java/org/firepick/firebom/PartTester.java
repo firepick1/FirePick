@@ -23,16 +23,18 @@ package org.firepick.firebom;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
+import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
 public class PartTester {
     private URL url;
     private Part part;
 
-    public PartTester(String url) throws IOException {
+    public PartTester(PartFactory partFactory, String url) throws IOException {
         this.url = new URL(url);
-        part = new PartFactory().createPart(this.url);
+        part = partFactory.createPart(this.url);
         part.validate();
         assert(part.isValid());
     }
@@ -54,6 +56,22 @@ public class PartTester {
 
     public PartTester testPackageUnits(double value) {
         assertEquals(value, part.getPackageUnits(), 0);
+        return this;
+    }
+
+    public PartTester testRequiredParts(int value) {
+        List<PartUsage> partUsages = part.getRequiredParts();
+        assertNotNull(partUsages);
+        assertEquals(value, partUsages.size());
+        return this;
+    }
+
+    public PartTester testRequiredPart(int index, String partId, double quantity, double unitCost) {
+        List<PartUsage> partUsages = part.getRequiredParts();
+        PartUsage partUsage = partUsages.get(index);
+        assertEquals(partId, partUsage.getPart().getId());
+        assertEquals(partId + " quantity", quantity, partUsage.getQuantity(), 0);
+        assertEquals(partId + " unit cost", unitCost, partUsage.getPart().getUnitCost(), 0);
         return this;
     }
 }

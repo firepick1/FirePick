@@ -21,31 +21,26 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.regex.Pattern;
+public class PartUsage {
+    private Part part;
+    private double quantity;
 
-public class ShapewaysPart extends Part {
-    private static Pattern startId = Pattern.compile("<title>");
-    private static Pattern endId = Pattern.compile(" ");
-    private static Pattern startPrice = Pattern.compile(" <div class=\"price\">\\$");
-    private static Pattern endPrice = Pattern.compile("</div>");
-
-    public ShapewaysPart(PartFactory partFactory, URL url) throws IOException {
-        super(partFactory);
-        setUrl(url);
+    public Part getPart() {
+        return part;
     }
 
-    @Override
-    protected void update() throws IOException {
-        String content = partFactory.urlTextContent(getUrl());
-        String price = partFactory.scrapeText(content, startPrice, endPrice);
-        if (price != null) {
-            setPackageCost(Double.parseDouble(price));
-        }
-        String id = partFactory.scrapeText(content, startId, endId);
-        if (id != null) {
-            setId(id);
-        }
+    public PartUsage setPart(Part part) {
+        this.part = part;
+        return this;
     }
+
+    public double getQuantity() {
+        return quantity;
+    }
+
+    public PartUsage setQuantity(double quantity) {
+        this.quantity = quantity;
+        return this;
+    }
+
 }

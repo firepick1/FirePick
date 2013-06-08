@@ -51,7 +51,7 @@ public class PartFactory {
         }
     }
 
-    public String urlContents(URL url) throws IOException {
+    public String urlTextContent(URL url) throws IOException {
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("Accept", accept);
         connection.setRequestProperty("Accept-Language", language);
@@ -102,7 +102,12 @@ public class PartFactory {
             part = new McMasterCarrPart(this, url);
         } else if ("github.com".equalsIgnoreCase(host)) {
             part = new GitHubPart(this, url);
+        } else if ("us.misumi-ec.com".equalsIgnoreCase(host)) {
+            part = new MisumiPart(this, url);
+        } else if ("www.inventables.com".equalsIgnoreCase(host)) {
+            part = new InventablesPart(this, url);
         }
+
 
         partMap.put(url, part);
 

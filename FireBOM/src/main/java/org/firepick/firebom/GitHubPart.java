@@ -23,13 +23,13 @@ package org.firepick.firebom;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class GitHubPart extends Part {
-    private static Pattern startSource = Pattern.compile("<a\\s+href=\"");
-    private static Pattern endSource = Pattern.compile("\"");
     private static Pattern startTitle = Pattern.compile("<title>");
     private static Pattern endTitle = Pattern.compile("[< ]");
+    private List<String> sourceList;
 
     public GitHubPart(PartFactory partFactory, URL url) throws IOException {
         super(partFactory);
@@ -38,22 +38,35 @@ public class GitHubPart extends Part {
 
     @Override
     protected void update() throws IOException {
-        String content = partFactory.urlContents(getUrl());
+        String content = partFactory.urlTextContent(getUrl());
         String title = partFactory.scrapeText(content, startTitle, endTitle);
         setId(title);
-        String [] ulParts = content.split("<ul>");
 
-        boolean sourcesFound = false;
-        for (String ulPart: ulParts) {
+        String[] ulParts = content.split("</ul>");
+        double cost = 0;
+        for (String ulPart : ulParts) {
             if (ulPart.contains("@Sources")) {
-                sourcesFound = true;
-            } else if (sourcesFound) {
-                String [] liParts = ulPart.split("</li>");
-                String sourceUrl = partFactory.scrapeText(liParts[0], startSource, endSource);
-                Part sourcePart = partFactory.createPart(new URL(sourceUrl));
-                setPackageCost(sourcePart.getUnitCost());
-                break;
+                sourceList = parseListItemStrings(ulPart);
+                if (sourceList.size() == 0) {
+                    throw new RuntimeException("GitHub page has no @Sources tag");
+                }
+                URL sourceUrl = parseLink(sourceList.get(0));
+                Part sourcePart = partFactory.createPart(sourceUrl);
+                cost += sourcePart.getUnitCost();
+            } else if (ulPart.contains("@Required")) {
+                List<String> requiredItems = parseListItemStrings(ulPart);
+                requiredParts.clear();
+                for (String required : requiredItems) {
+                    URL link = parseLink(required);
+                    double quantity = parseQuantity(required, 1);
+                    Part part = partFactory.createPart(link);
+                    PartUsage partUsage = new PartUsage().setPart(part).setQuantity(quantity);
+                    requiredParts.add(partUsage);
+                    cost += quantity * part.getUnitCost();
+                }
             }
         }
+        setPackageCost(cost);
     }
+
 }
