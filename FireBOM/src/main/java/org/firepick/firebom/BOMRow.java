@@ -21,6 +21,7 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.relation.IColumnDescription;
 import org.firepick.relation.IRelation;
 import org.firepick.relation.IRow;
 
@@ -46,12 +47,14 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
             value = getPart().getId();
         } else if (index == BOMColumnDescription.QUANTITY.getIndex()) {
             value = getQuantity();
-        } else if (index == BOMColumnDescription.UNIT_COST.getIndex()) {
-            value = getPart().getUnitCost();
+        } else if (index == BOMColumnDescription.COST.getIndex()) {
+            value = getCost();
         } else if (index == BOMColumnDescription.URL.getIndex()) {
             value = getPart().getUrl();
         } else if (index == BOMColumnDescription.TITLE.getIndex()) {
             value = getPart().getTitle();
+        } else if (index == BOMColumnDescription.VENDOR.getIndex()) {
+            value = getVendor();
         }
         return value;
     }
@@ -64,7 +67,7 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (BOMColumnDescription columnDescription: BOMColumnDescription.values()) {
+        for (IColumnDescription columnDescription: BOMColumnDescription.values()) {
             Format format = columnDescription.getFormat();
             Object value = item(columnDescription.getIndex());
             if (sb.length() > 0) {

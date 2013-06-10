@@ -21,58 +21,42 @@ package org.firepick.relation;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import java.text.Format;
+import java.text.*;
 
-public class ColumnDescription<T> implements IColumnDescription<T> {
-    private String id;
-    private String title;
+public class FixedWidthFormat extends Format {
     private Format format;
-    private int index;
-    private IAggregator<T> aggregator;
+    private int width;
 
-    public String getId() {
-        return id;
+    public FixedWidthFormat(int width, Format format) {
+        this.format = format;
+        this.width = width;
     }
 
-    public ColumnDescription setId(String id) {
-        this.id = id;
-        return this;
+    @Override
+    public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
+        int length = toAppendTo.length();
+        if (obj instanceof String) {
+            toAppendTo.append(obj);
+        } else {
+            format.format(obj, toAppendTo, pos);
+        }
+        int padding = width - (toAppendTo.length() - length);
+        for (int iPad = 0; iPad < padding; iPad++) {
+            if (format instanceof NumberFormat) {
+                toAppendTo.insert(0, "\u2007");
+            } else {
+                toAppendTo.insert(0, " ");
+            }
+        }
+        return toAppendTo;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public ColumnDescription setTitle(String title) {
-        this.title = title;
-        return this;
+    @Override
+    public Object parseObject(String source, ParsePosition pos) {
+        return format.parseObject(source, pos);
     }
 
     public Format getFormat() {
         return format;
     }
-
-    public ColumnDescription setFormat(Format format) {
-        this.format = format;
-        return this;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public ColumnDescription setIndex(int index) {
-        this.index = index;
-        return this;
-    }
-
-    public IAggregator<T> getAggregator() {
-        return aggregator;
-    }
-
-    public ColumnDescription setAggregator(IAggregator<T> aggregator) {
-        this.aggregator = aggregator;
-        return this;
-    }
-
 }

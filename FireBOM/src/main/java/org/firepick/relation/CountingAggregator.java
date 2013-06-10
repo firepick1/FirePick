@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.relation;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,42 +21,27 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-public class PartUsage {
-    private Part part;
-    private double quantity;
-    private String vendor;
+public class CountingAggregator<T> implements IAggregator<Integer> {
+    private int count ;
 
-    public Part getPart() {
-        return part;
-    }
-
-    public PartUsage setPart(Part part) {
-        this.part = part;
+    @Override
+    public CountingAggregator aggregate(Object value) {
+        count++;
         return this;
     }
 
-    public double getQuantity() {
-        return quantity;
+    @Override
+    public void clear() {
+        count = 0;
     }
 
-    public PartUsage setQuantity(double quantity) {
-        this.quantity = quantity;
-        return this;
+    @Override
+    public long getCount() {
+        return count;
     }
 
-    public double getCost() {
-        return quantity * part.getUnitCost();
-    }
-
-    public String getVendor() {
-        if (vendor == null) {
-            return getPart().getVendor();
-        }
-        return vendor;
-    }
-
-    public PartUsage setVendor(String vendor) {
-        this.vendor = vendor;
-        return this;
+    @Override
+    public Integer getAggregate() {
+        return count;
     }
 }

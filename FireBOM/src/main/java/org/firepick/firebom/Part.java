@@ -36,6 +36,7 @@ public abstract class Part implements IPartComparable {
     protected List<PartUsage> requiredParts;
     private String id;
     private String title;
+    private String vendor;
     private URL url;
     private double packageCost;
     private double packageUnits;
@@ -102,7 +103,9 @@ public abstract class Part implements IPartComparable {
                 update();
             }
             catch (IOException e) {
-                throw new RuntimeException("Could not validate part from " + url, e);
+                setTitle("WEBSITE UNAVAILABLE");
+                setPackageCost(0);
+                setPackageUnits(1);
             }
             setValid(true);
         }
@@ -149,10 +152,12 @@ public abstract class Part implements IPartComparable {
     }
 
     public List<PartUsage> getRequiredParts() {
+        validate();
         return Collections.unmodifiableList(requiredParts);
     }
 
     public String getTitle() {
+        validate();
         return title == null ? getId() : title;
     }
 
@@ -169,5 +174,18 @@ public abstract class Part implements IPartComparable {
     @Override
     public int compareTo(IPartComparable that) {
         return getId().compareTo(that.getPart().getId());
+    }
+
+    public String getVendor() {
+        validate();
+        if (vendor == null) {
+            return getUrl().getHost();
+        }
+        return vendor;
+    }
+
+    public Part setVendor(String vendor) {
+        this.vendor = vendor;
+        return this;
     }
 }

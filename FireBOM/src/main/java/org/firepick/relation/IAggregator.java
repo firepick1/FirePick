@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.relation;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,42 +21,12 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-public class PartUsage {
-    private Part part;
-    private double quantity;
-    private String vendor;
+public interface IAggregator<T> {
+    void clear();
 
-    public Part getPart() {
-        return part;
-    }
+    IAggregator<T> aggregate(Object value);
 
-    public PartUsage setPart(Part part) {
-        this.part = part;
-        return this;
-    }
+    long getCount();
 
-    public double getQuantity() {
-        return quantity;
-    }
-
-    public PartUsage setQuantity(double quantity) {
-        this.quantity = quantity;
-        return this;
-    }
-
-    public double getCost() {
-        return quantity * part.getUnitCost();
-    }
-
-    public String getVendor() {
-        if (vendor == null) {
-            return getPart().getVendor();
-        }
-        return vendor;
-    }
-
-    public PartUsage setVendor(String vendor) {
-        this.vendor = vendor;
-        return this;
-    }
+    T getAggregate();
 }

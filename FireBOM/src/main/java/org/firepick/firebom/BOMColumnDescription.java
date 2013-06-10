@@ -21,50 +21,41 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.relation.ColumnDescription;
-import org.firepick.relation.IColumnDescription;
+import org.firepick.relation.*;
 
 import java.text.DecimalFormat;
 import java.text.Format;
-import java.net.URL;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 
-public enum BOMColumnDescription implements IColumnDescription {
-    ID(0, "id", "ID", String.class, null),
-    TITLE(1, "title", "TITLE", String.class, null),
-    QUANTITY(2, "qty", "QUANTITY", Double.class, new DecimalFormat()),
-    UNIT_COST(3, "cost", "COST", Double.class, new DecimalFormat()),
-    URL(4, "url", "URL", URL.class, null),
+public class BOMColumnDescription<T> extends ColumnDescription<T> {
+    public final static BOMColumnDescription<String> TITLE
+            = new BOMColumnDescription<String>(0, "title", "TITLE", null, new StringAggregator("TOTAL"));
+    public final static BOMColumnDescription<String> ID
+            = new BOMColumnDescription<String>(1, "id", "ID", new FixedWidthFormat(4, new TextFormat()), new CountingAggregator());
+    public final static BOMColumnDescription<Double> QUANTITY
+            = new BOMColumnDescription<Double>(2, "qty", "QTY", new FixedWidthFormat(3, new DecimalFormat()), new DoubleAggregator(NumericAggregationType.SUM));
+    public final static BOMColumnDescription<Double> COST
+            = new BOMColumnDescription<Double>(3, "cost", "COST", new FixedWidthFormat(9, NumberFormat.getCurrencyInstance()), new DoubleAggregator(NumericAggregationType.SUM));
+    public final static BOMColumnDescription<String > VENDOR
+            = new BOMColumnDescription<String>(4, "vendor", "VENDOR", new FixedWidthFormat(20, new TextFormat()), new StringAggregator("TOTAL"));
+    public final static ColumnDescription<String> URL
+            = new BOMColumnDescription<String>(5, "url", "URL", null, new StringAggregator("TOTAL"));
     ;
 
-    private ColumnDescription columnDescription;
-    private int index;
-
-    private BOMColumnDescription(int index, String id, String title, Class dataClass, Format format) {
-        this.index = index;
-        this.columnDescription = new ColumnDescription().setId(id).setTitle(title).setFormat(format).setDataClass(dataClass);
+    public BOMColumnDescription(int index, String id, String title, Format format, IAggregator<T> aggregator) {
+        setIndex(index).setAggregator(aggregator).setId(id).setTitle(title).setFormat(format);
     }
 
-    @Override
-    public String getTitle() {
-        return columnDescription.getTitle();
-    }
-
-    @Override
-    public String getId() {
-        return columnDescription.getId();
-    }
-
-    @Override
-    public Class getDataClass() {
-        return columnDescription.getDataClass();
-    }
-
-    @Override
-    public Format getFormat() {
-        return columnDescription.getFormat();
-    }
-
-    public int getIndex() {
-        return index;
+    public static List<IColumnDescription> values() {
+        ArrayList<IColumnDescription> list = new ArrayList<IColumnDescription>();
+        list.add(ID);
+        list.add(QUANTITY);
+        list.add(COST);
+        list.add(VENDOR);
+        list.add(TITLE);
+        list.add(URL);
+        return list;
     }
 }

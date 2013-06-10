@@ -27,8 +27,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class GitHubPart extends Part {
-    private static Pattern startTitle = Pattern.compile("<title>");
-    private static Pattern endTitle = Pattern.compile("[< ]");
+    private static Pattern startId = Pattern.compile("<title>");
+    private static Pattern endId = Pattern.compile("[< ]");
+    private static Pattern startTitle = Pattern.compile("<span class=\"octicon octicon-link\"></span></a>");
+    private static Pattern endTitle = Pattern.compile("</h");
     private List<String> sourceList;
 
     public GitHubPart(PartFactory partFactory, URL url) throws IOException {
@@ -39,8 +41,12 @@ public class GitHubPart extends Part {
     @Override
     protected void update() throws IOException {
         String content = partFactory.urlTextContent(getUrl());
+        String id = partFactory.scrapeText(content, startId, endId);
+        setId(id);
         String title = partFactory.scrapeText(content, startTitle, endTitle);
-        setId(title);
+        if (title != null) {
+            setTitle(title);
+        }
 
         String[] ulParts = content.split("</ul>");
         double cost = 0;
@@ -52,6 +58,7 @@ public class GitHubPart extends Part {
                 }
                 URL sourceUrl = parseLink(sourceList.get(0));
                 Part sourcePart = partFactory.createPart(sourceUrl);
+                setVendor(sourcePart.getVendor());
                 cost += sourcePart.getUnitCost();
             } else if (ulPart.contains("@Required")) {
                 List<String> requiredItems = parseListItemStrings(ulPart);

@@ -35,7 +35,7 @@ public class BOM implements IRelation {
     public List<IColumnDescription> describeColumns() {
         if (columnDescriptions == null) {
             columnDescriptions = new ArrayList<IColumnDescription>();
-            for (BOMColumnDescription columnDescription : BOMColumnDescription.values()) {
+            for (IColumnDescription columnDescription : BOMColumnDescription.values()) {
                 columnDescriptions.add(columnDescription);
             }
         }
@@ -91,13 +91,13 @@ public class BOM implements IRelation {
         double cost = 0;
         for (IPartComparable row: rows) {
             BOMRow bomRow = (BOMRow) row;
-            cost += bomRow.getQuantity() * bomRow.getPart().getUnitCost();
+            cost += bomRow.getCost();
         }
         return cost;
     }
 
-    public double partCount() {
-        double count = 0;
+    public int partCount() {
+        int count = 0;
         for (IPartComparable row: rows) {
             BOMRow bomRow = (BOMRow) row;
             count += bomRow.getQuantity();

@@ -21,7 +21,7 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.relation.IRow;
+import org.firepick.relation.RelationPrinter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ import java.net.URL;
 import static org.junit.Assert.assertEquals;
 
 public class BOMTest {
-private PartFactory partFactory;
+    private PartFactory partFactory;
 
     @Before
     public void setup() {
@@ -38,18 +38,24 @@ private PartFactory partFactory;
     }
 
     @Test
-    public void testD7IH() throws Exception{
+    public void testD7IH() throws Exception {
         BOM bom = new BOM();
         assertEquals(0, bom.getRowCount());
         Part part = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
         bom.addPart(part, 2);
         assertEquals(6, bom.getRowCount());
-        System.out.println(bom);
-        for (IRow row: bom) {
-            assertEquals(bom, row.getRelation());
-            System.out.println(row);
-        }
-        System.out.println("Total cost: " + bom.totalCost());
-        System.out.println("Part count:" + bom.partCount());
+        new RelationPrinter().print(bom, System.out);
+        assertEquals("Total cost: ", 27.1392, bom.totalCost(), 0);
+        assertEquals("Part count:", 12, bom.partCount());
+    }
+
+    @Test
+    public void testD7IHMarkdown() throws Exception {
+        BOM bom = new BOM();
+        assertEquals(0, bom.getRowCount());
+        Part part = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
+        bom.addPart(part, 1);
+        assertEquals(6, bom.getRowCount());
+        new BOMMarkdownPrinter().print(bom, System.out);
     }
 }

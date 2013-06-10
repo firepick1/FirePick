@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.relation;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,42 +21,19 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-public class PartUsage {
-    private Part part;
-    private double quantity;
-    private String vendor;
+import java.text.FieldPosition;
+import java.text.Format;
+import java.text.ParsePosition;
 
-    public Part getPart() {
-        return part;
+public class TextFormat extends Format {
+    @Override
+    public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
+        toAppendTo.append(obj.toString());
+        return toAppendTo;
     }
 
-    public PartUsage setPart(Part part) {
-        this.part = part;
-        return this;
-    }
-
-    public double getQuantity() {
-        return quantity;
-    }
-
-    public PartUsage setQuantity(double quantity) {
-        this.quantity = quantity;
-        return this;
-    }
-
-    public double getCost() {
-        return quantity * part.getUnitCost();
-    }
-
-    public String getVendor() {
-        if (vendor == null) {
-            return getPart().getVendor();
-        }
-        return vendor;
-    }
-
-    public PartUsage setVendor(String vendor) {
-        this.vendor = vendor;
-        return this;
+    @Override
+    public Object parseObject(String source, ParsePosition pos) {
+        return source;
     }
 }

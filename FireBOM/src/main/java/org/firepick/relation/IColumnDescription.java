@@ -23,9 +23,10 @@ package org.firepick.relation;
 
 import java.text.Format;
 
-public interface IColumnDescription {
+public interface IColumnDescription<T> {
     String getTitle();
     String getId();
-    Class getDataClass();
     Format getFormat();
+    int getIndex();
+    IAggregator<T> getAggregator();
 }
