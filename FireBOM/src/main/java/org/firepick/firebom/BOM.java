@@ -104,4 +104,13 @@ public class BOM implements IRelation {
         }
         return count;
     }
+
+    public boolean isValid() {
+        for (IPartComparable row: rows) {
+            if (!row.getPart().isValid()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

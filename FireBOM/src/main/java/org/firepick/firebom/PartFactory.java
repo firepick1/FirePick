@@ -37,6 +37,7 @@ public class PartFactory {
     private String accept;
     private String language;
     private String userAgent;
+    private long validationMillis = 5000;
     private HashMap<URL, Part> partMap = new HashMap<URL, Part>();
 
     public PartFactory() {
@@ -114,4 +115,11 @@ public class PartFactory {
         return part;
     }
 
+    public long getValidationMillis() {
+        return validationMillis;
+    }
+
+    public void setValidationMillis(long validationMillis) {
+        this.validationMillis = validationMillis;
+    }
 }

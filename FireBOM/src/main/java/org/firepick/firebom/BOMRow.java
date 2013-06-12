@@ -61,7 +61,18 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
 
     @Override
     public int compareTo(IPartComparable that) {
-        return getPart().getId().compareTo(that.getPart().getId());
+        String id1 = getPart().getId();
+        String id2 = that.getPart().getId();
+        if (id1 == id2) {
+            return 0;
+        }
+        if (id1 == null) {
+            return -1;
+        }
+        if (id2 == null) {
+            return 1;
+        }
+        return id1.compareTo(id2);
     }
 
     @Override

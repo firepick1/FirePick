@@ -37,8 +37,10 @@ public class FixedWidthFormat extends Format {
         int length = toAppendTo.length();
         if (obj instanceof String) {
             toAppendTo.append(obj);
+        } else if (obj == null) {
+            toAppendTo.append("null");
         } else {
-            format.format(obj, toAppendTo, pos);
+                format.format(obj, toAppendTo, pos);
         }
         int padding = width - (toAppendTo.length() - length);
         for (int iPad = 0; iPad < padding; iPad++) {

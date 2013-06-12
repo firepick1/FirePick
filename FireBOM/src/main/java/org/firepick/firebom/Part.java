@@ -21,6 +21,9 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,6 +33,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public abstract class Part implements IPartComparable {
+    private static Logger logger = LoggerFactory.getLogger(Part.class);
     private static Pattern startLink = Pattern.compile("<a\\s+href=\"");
     private static Pattern endLink = Pattern.compile("\"");
     protected final PartFactory partFactory;
@@ -40,6 +44,7 @@ public abstract class Part implements IPartComparable {
     private URL url;
     private double packageCost;
     private double packageUnits;
+    private long lastValidationMillis;
     private boolean isValid;
 
     public Part(PartFactory partFactory) {
@@ -97,18 +102,37 @@ public abstract class Part implements IPartComparable {
         return getPackageCost() / getPackageUnits();
     }
 
+    private int validating;
+
     public synchronized void validate() {
-        if (!isValid) {
-            try {
-                update();
+        if (validating == 0 && !isValid) {
+            validating++;
+            long elapsedMillis = System.currentTimeMillis() - lastValidationMillis;
+            if (elapsedMillis > partFactory.getValidationMillis()) {
+                try {
+                    clear();
+                    update();
+                    setValid(true);
+                    logger.info("{} {} {}x{} {}", new Object[]{getId(), getTitle(), getPackageCost(), getPackageUnits(), getUrl()});
+                }
+                catch (Throwable e) {
+                    logger.warn("Could not validate part {}", getUrl(), e);
+                }
+                finally {
+                    lastValidationMillis = System.currentTimeMillis();
+                }
             }
-            catch (IOException e) {
-                setTitle("WEBSITE UNAVAILABLE");
-                setPackageCost(0);
-                setPackageUnits(1);
-            }
-            setValid(true);
+            validating--;
         }
+    }
+
+    private void clear() {
+        setId(null);
+        setTitle(null);
+        setVendor(null);
+        setPackageCost(0);
+        setPackageUnits(1);
+        // do not clear URL;
     }
 
     /**

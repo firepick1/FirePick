@@ -25,9 +25,10 @@ import org.firepick.relation.RelationPrinter;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.URL;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class BOMTest {
     private PartFactory partFactory;
@@ -35,6 +36,48 @@ public class BOMTest {
     @Before
     public void setup() {
         partFactory = new PartFactory();
+    }
+
+    @Test
+    public void testBadUrl()  {
+        IOExceptionPartFactory factory = new IOExceptionPartFactory();
+        Part part = null;
+        try {
+            part = factory.createPart(new URL("http://shpws.me/nekC"));
+        }
+        catch (IOException e) {
+            fail();
+        }
+        assertEquals(null, part.getId());
+        assertEquals(null, part.getTitle());
+        assertEquals(part, part.getPart());
+        assertEquals(0, part.getPackageCost(),0);
+        assertEquals(1, part.getPackageUnits(),0);
+        assertEquals("www.shapeways.com", part.getVendor());
+        assertFalse(part.isValid());
+
+        BOM bom = new BOM();
+        bom.addPart(part, 1);
+        assertFalse(bom.isValid());
+        new RelationPrinter().print(bom, System.out);
+
+        factory.setAvailable(true);
+        part.validate();
+        assertFalse(part.isValid());
+
+        try {
+            Thread.sleep(factory.getValidationMillis());
+        }
+        catch (InterruptedException e) {
+            fail();
+        }
+        part.validate();
+        assertTrue(part.isValid());
+
+        bom = new BOM();
+        bom.addPart(part, 1);
+        assertTrue(bom.isValid());
+        new RelationPrinter().print(bom, System.out);
     }
 
     @Test

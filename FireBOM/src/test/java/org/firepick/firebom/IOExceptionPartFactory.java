@@ -23,34 +23,24 @@ package org.firepick.firebom;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.regex.Pattern;
 
-public class ShapewaysPart extends Part {
-    private static Pattern startId = Pattern.compile("<title>");
-    private static Pattern endId = Pattern.compile(" ");
-    private static Pattern startPrice = Pattern.compile(" <div class=\"price\">\\$");
-    private static Pattern endPrice = Pattern.compile("</div>");
-
-    public ShapewaysPart(PartFactory partFactory, URL url) throws IOException {
-        super(partFactory);
-        setUrl(url);
-    }
+public class IOExceptionPartFactory extends PartFactory {
+    private boolean isAvailable;
 
     @Override
-    protected void update() throws IOException {
-        String content = partFactory.urlTextContent(getUrl());
-        String price = partFactory.scrapeText(content, startPrice, endPrice);
-        if (price != null) {
-            setPackageCost(Double.parseDouble(price));
+    public String urlTextContent(URL url) throws IOException {
+        if (isAvailable) {
+            return super.urlTextContent(url);
         }
-        String id = partFactory.scrapeText(content, startId, endId);
-        if (id != null) {
-            setId(id);
-        }
+        throw new IOException("test exception");
     }
 
-    @Override
-    public String getVendor() {
-        return "www.shapeways.com";
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public IOExceptionPartFactory setAvailable(boolean available) {
+        isAvailable = available;
+        return this;
     }
 }
