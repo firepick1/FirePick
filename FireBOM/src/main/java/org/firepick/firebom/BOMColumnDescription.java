@@ -42,7 +42,8 @@ public class BOMColumnDescription<T> extends ColumnDescription<T> {
             = new BOMColumnDescription<String>(4, "vendor", "VENDOR", new FixedWidthFormat(20, new TextFormat()), new StringAggregator("TOTAL"));
     public final static ColumnDescription<String> URL
             = new BOMColumnDescription<String>(5, "url", "URL", null, new StringAggregator("TOTAL"));
-    ;
+    public final static BOMColumnDescription<String > PROJECT
+            = new BOMColumnDescription<String>(6, "project", "PROJECT", new FixedWidthFormat(10, new TextFormat()), new StringAggregator("TOTAL"));
 
     public BOMColumnDescription(int index, String id, String title, Format format, IAggregator<T> aggregator) {
         setIndex(index).setAggregator(aggregator).setId(id).setTitle(title).setFormat(format);
@@ -50,6 +51,7 @@ public class BOMColumnDescription<T> extends ColumnDescription<T> {
 
     public static List<IColumnDescription> values() {
         ArrayList<IColumnDescription> list = new ArrayList<IColumnDescription>();
+        list.add(PROJECT);
         list.add(ID);
         list.add(QUANTITY);
         list.add(COST);

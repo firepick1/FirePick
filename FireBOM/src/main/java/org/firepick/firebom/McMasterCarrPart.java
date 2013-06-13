@@ -34,8 +34,7 @@ public class McMasterCarrPart extends Part {
             "http://www.mcmaster.com/WebParts/Ordering/InLnOrdWebPart/InLnOrdWebPart.aspx?cntnridtxt=InLnOrd_ItmBxRw_1_{PART}&partnbrtxt={PART}&multipartnbrind=false&partnbrslctdmsgcntxtnm=FullPrsnttn&autoslctdind=false";
 
     public McMasterCarrPart(PartFactory partFactory, URL url) throws IOException {
-        super(partFactory);
-        setUrl(url);
+        super(partFactory, url);
     }
 
     @Override

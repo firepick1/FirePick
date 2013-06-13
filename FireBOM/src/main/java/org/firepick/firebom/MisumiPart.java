@@ -42,8 +42,7 @@ public class MisumiPart extends Part {
     }
     
     @Override
-    protected void update() throws IOException {
-        String content = partFactory.urlTextContent(getUrl());
+    protected void parseContent(String content) throws IOException {
         String item = partFactory.scrapeText(content, startItem, endItem);
         item = item.substring(item.length()-11);
         String id = partFactory.scrapeText(getUrl().toString(), startId, endId);
@@ -60,6 +59,5 @@ public class MisumiPart extends Part {
         if (packageUnits != null) {
             setPackageUnits(Double.parseDouble(packageUnits));
         }
-
     }
 }

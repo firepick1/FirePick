@@ -59,6 +59,11 @@ public class PartTester {
         return this;
     }
 
+    public PartTester testProject(String value) {
+        assertEquals(value, part.getProject());
+        return this;
+    }
+
     public PartTester testRequiredParts(int value) {
         List<PartUsage> partUsages = part.getRequiredParts();
         assertNotNull(partUsages);

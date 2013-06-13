@@ -32,13 +32,11 @@ public class ShapewaysPart extends Part {
     private static Pattern endPrice = Pattern.compile("</div>");
 
     public ShapewaysPart(PartFactory partFactory, URL url) throws IOException {
-        super(partFactory);
-        setUrl(url);
+        super(partFactory, url);
     }
 
     @Override
-    protected void update() throws IOException {
-        String content = partFactory.urlTextContent(getUrl());
+    protected void parseContent(String content) throws IOException {
         String price = partFactory.scrapeText(content, startPrice, endPrice);
         if (price != null) {
             setPackageCost(Double.parseDouble(price));

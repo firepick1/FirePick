@@ -21,31 +21,13 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.regex.Pattern;
-
-public class GitHubPart extends HtmlPart {
-    private static Pattern startId = Pattern.compile("<title>");
-    private static Pattern endId = Pattern.compile("[< ]");
-    private static Pattern startTitle = Pattern.compile("<span class=\"octicon octicon-link\"></span></a>");
-    private static Pattern endTitle = Pattern.compile("</h");
-
-    public GitHubPart(PartFactory partFactory, URL url) throws IOException {
-        super(partFactory, url);
+public class ApplicationLimitsException extends RuntimeException {
+    public ApplicationLimitsException(String message) {
+        super(message);
     }
 
-    @Override
-    protected void parseContent(String content) throws IOException {
-        super.parseContent(content);
-        String id = partFactory.scrapeText(content, startId, endId);
-        setId(id);
-        String title = partFactory.scrapeText(content, startTitle, endTitle);
-        if (title != null) {
-            setTitle(title);
-        }
-        String [] paths = getUrl().getPath().split("/");
-        setProject(paths[2]);
+    @SuppressWarnings("unused")
+    public ApplicationLimitsException(String message, Throwable e) {
+        super(message, e);
     }
-
 }

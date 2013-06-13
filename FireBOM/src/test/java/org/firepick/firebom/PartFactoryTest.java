@@ -52,17 +52,17 @@ public class PartFactoryTest {
     @Test
     public void testMcMasterCarr() throws Exception {
         new PartTester(partFactory, "http://www.mcmaster.com/#91290A115")
-                .testId("91290A115").testPackageCost(6.39).testPackageUnits(100).testUnitCost(.0639);
+                .testId("91290A115").testPackageCost(6.39).testPackageUnits(100).testUnitCost(.0639).testProject("www.mcmaster.com");
         new PartTester(partFactory, "http://www.mcmaster.com/#57485K63")
-                .testId("57485K63").testPackageCost(1.55).testPackageUnits(1).testUnitCost(1.55);
+                .testId("57485K63").testPackageCost(1.55).testPackageUnits(1).testUnitCost(1.55).testProject("www.mcmaster.com");
         new PartTester(partFactory, "http://www.mcmaster.com/#95601A295")
-                .testId("95601A295").testPackageCost(2.27).testPackageUnits(100).testUnitCost(0.0227);
+                .testId("95601A295").testPackageCost(2.27).testPackageUnits(100).testUnitCost(0.0227).testProject("www.mcmaster.com");
     }
 
     @Test
     public void testGitHub() throws Exception {
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/X523")
-                .testId("X523").testPackageCost(.63).testPackageUnits(1).testUnitCost(.63).testRequiredParts(0);
+                .testId("X523").testPackageCost(.63).testPackageUnits(1).testUnitCost(.63).testRequiredParts(0).testProject("FirePick");
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH")
                 .testId("D7IH").testUnitCost(11.6698).testPackageCost(11.6698).testPackageUnits(1)
                 .testRequiredParts(5)
@@ -71,6 +71,7 @@ public class PartFactoryTest {
                 .testRequiredPart(2, "F510", 1, 0.0793)
                 .testRequiredPart(3, "F50N", 1, 0.0173)
                 .testRequiredPart(4, "X50K", 1, 0.1932)
+                .testProject("FirePick")
         ;
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/F3WF")
                 .testId("F3WF").testUnitCost(0.0227).testPackageCost(0.0227).testPackageUnits(1);

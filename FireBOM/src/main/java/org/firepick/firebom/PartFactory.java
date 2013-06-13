@@ -37,7 +37,7 @@ public class PartFactory {
     private String accept;
     private String language;
     private String userAgent;
-    private long validationMillis = 5000;
+    private long validationMillis;
     private HashMap<URL, Part> partMap = new HashMap<URL, Part>();
 
     public PartFactory() {
@@ -45,6 +45,7 @@ public class PartFactory {
     }
 
     public PartFactory(Locale locale) {
+        setValidationMillis(5000);
         if (locale == US) {
             accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
             language = "en-US,en;q=0.8";
@@ -93,7 +94,7 @@ public class PartFactory {
             return partMap.get(url);
         }
         String host = url.getHost();
-        Part part = null;
+        Part part;
 
         if ("www.shapeways.com".equalsIgnoreCase(host)) {
             part = new ShapewaysPart(this, url);
@@ -107,8 +108,9 @@ public class PartFactory {
             part = new MisumiPart(this, url);
         } else if ("www.inventables.com".equalsIgnoreCase(host)) {
             part = new InventablesPart(this, url);
+        } else {
+            part = new HtmlPart(this, url);
         }
-
 
         partMap.put(url, part);
 

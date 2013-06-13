@@ -39,7 +39,7 @@ public class BOMTest {
     }
 
     @Test
-    public void testBadUrl()  {
+    public void testBadUrl() {
         IOExceptionPartFactory factory = new IOExceptionPartFactory();
         Part part = null;
         try {
@@ -51,8 +51,8 @@ public class BOMTest {
         assertEquals(null, part.getId());
         assertEquals(null, part.getTitle());
         assertEquals(part, part.getPart());
-        assertEquals(0, part.getPackageCost(),0);
-        assertEquals(1, part.getPackageUnits(),0);
+        assertEquals(0, part.getPackageCost(), 0);
+        assertEquals(1, part.getPackageUnits(), 0);
         assertEquals("www.shapeways.com", part.getVendor());
         assertFalse(part.isValid());
 
@@ -100,5 +100,44 @@ public class BOMTest {
         bom.addPart(part, 1);
         assertEquals(6, bom.getRowCount());
         new BOMMarkdownPrinter().print(bom, System.out);
+    }
+
+    @Test
+    public void testMaximumParts() throws IOException {
+        BOM bom = new BOM().setMaximumParts(5);
+        assertEquals(5, bom.getMaximumParts());
+        Exception caughtException = null;
+        try {
+            for (int iPart = 0; iPart < 10; iPart++) {
+                Part part = partFactory.createPart(new URL("http://www.shapeways.com/badpart" + iPart));
+                bom.addPart(part, 1);
+            }
+        }
+        catch (Exception e) {
+            caughtException = e;
+        }
+        assert (caughtException instanceof ApplicationLimitsException);
+        assertEquals(5, bom.getRowCount());
+    }
+
+    @Test
+    public void testRecursiveBOM() throws IOException {
+        URL url1 = Main.class.getResource("/evilPart1.html");
+        URL url2 = Main.class.getResource("/evilPart2.html");
+        System.out.println(url1);
+        System.out.println(url2);
+        BOM bom = new BOM();
+        Part part1 = partFactory.createPart(url1);
+        Exception caughtException = null;
+        try {
+            bom.addPart(part1, 1);
+        }
+        catch (Exception e) {
+            caughtException = e;
+        }
+        assert (caughtException instanceof ApplicationLimitsException);
+        assertEquals(2, bom.getRowCount());
+        assert(caughtException.getMessage().contains("Recursive BOM"));
+        new RelationPrinter().print(bom, System.out);
     }
 }

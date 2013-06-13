@@ -23,6 +23,7 @@ package org.firepick.firebom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -37,15 +38,18 @@ public abstract class Part implements IPartComparable {
     private static Pattern startLink = Pattern.compile("<a\\s+href=\"");
     private static Pattern endLink = Pattern.compile("\"");
     protected final PartFactory partFactory;
+    protected List<String> sourceList;
     protected List<PartUsage> requiredParts;
     private String id;
     private String title;
     private String vendor;
+    private String project;
     private URL url;
     private double packageCost;
     private double packageUnits;
     private long lastValidationMillis;
     private boolean isValid;
+    private int validating;
 
     public Part(PartFactory partFactory) {
         this.partFactory = partFactory;
@@ -55,7 +59,7 @@ public abstract class Part implements IPartComparable {
 
     public Part(PartFactory partFactory, URL url) {
         this(partFactory);
-        this.url = url;
+        setUrl(url);
     }
 
     public String getId() {
@@ -102,8 +106,6 @@ public abstract class Part implements IPartComparable {
         return getPackageCost() / getPackageUnits();
     }
 
-    private int validating;
-
     public synchronized void validate() {
         if (validating == 0 && !isValid) {
             validating++;
@@ -126,6 +128,11 @@ public abstract class Part implements IPartComparable {
         }
     }
 
+    protected void update() throws IOException {
+        String content = partFactory.urlTextContent(getUrl());
+        parseContent(content);
+    }
+
     private void clear() {
         setId(null);
         setTitle(null);
@@ -135,10 +142,9 @@ public abstract class Part implements IPartComparable {
         // do not clear URL;
     }
 
-    /**
-     * Update part information from web
-     */
-    protected abstract void update() throws IOException;
+    protected void parseContent(String content) throws IOException {
+        throw new NotImplementedException();
+    }
 
     public boolean isValid() {
         return isValid;
@@ -175,11 +181,6 @@ public abstract class Part implements IPartComparable {
         return result;
     }
 
-    public List<PartUsage> getRequiredParts() {
-        validate();
-        return Collections.unmodifiableList(requiredParts);
-    }
-
     public String getTitle() {
         validate();
         return title == null ? getId() : title;
@@ -197,7 +198,25 @@ public abstract class Part implements IPartComparable {
 
     @Override
     public int compareTo(IPartComparable that) {
-        return getId().compareTo(that.getPart().getId());
+        String id1 = getPart().getId();
+        String id2 = that.getPart().getId();
+        int cmp = 0;
+
+        if (id1 != id2) {
+            if (id1 == null) {
+                cmp = -1;
+            } else if (id2 == null) {
+                cmp = 1;
+            } else {
+                cmp = id1.compareTo(id2);
+            }
+        }
+        if (cmp == 0) {
+            URL url1 = getUrl();
+            URL url2 = that.getPart().getUrl();
+            cmp = url1.toString().compareTo(url2.toString());
+        }
+        return cmp;
     }
 
     public String getVendor() {
@@ -210,6 +229,20 @@ public abstract class Part implements IPartComparable {
 
     public Part setVendor(String vendor) {
         this.vendor = vendor;
+        return this;
+    }
+
+    public List<PartUsage> getRequiredParts() {
+        validate();
+        return Collections.unmodifiableList(requiredParts);
+    }
+
+    public String getProject() {
+        return project == null ? getVendor() : project;
+    }
+
+    public Part setProject(String project) {
+        this.project = project;
         return this;
     }
 }

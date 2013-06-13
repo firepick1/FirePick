@@ -30,6 +30,7 @@ import java.util.*;
 public class BOM implements IRelation {
     private List<IColumnDescription> columnDescriptions;
     private TreeSet<IPartComparable> rows = new TreeSet<IPartComparable>();
+    private int maximumParts;
 
     @Override
     public List<IColumnDescription> describeColumns() {
@@ -63,22 +64,30 @@ public class BOM implements IRelation {
     public BOMRow addPart(Part part, double quantity) {
         BOMRow bomRow = lookup(part);
         if (bomRow != null) {
+            if (bomRow.isMarked()) {
+                throw new ApplicationLimitsException("Recursive BOM detected: " + part.getUrl());
+            }
             bomRow.setQuantity(bomRow.getQuantity() + quantity);
         } else {
+            if (maximumParts > 0 && rows.size() >= maximumParts) {
+                throw new ApplicationLimitsException("Maximum part limit exceeded: " + maximumParts);
+            }
             bomRow = new BOMRow(this, part);
             bomRow.setQuantity(quantity);
             rows.add(bomRow);
         }
-        for (PartUsage partUsage: part.getRequiredParts()) {
+        bomRow.setMarked(true);
+        for (PartUsage partUsage : part.getRequiredParts()) {
             addPart(partUsage.getPart(), partUsage.getQuantity() * quantity);
         }
+        bomRow.setMarked(false);
         return bomRow;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (IColumnDescription columnDescription: describeColumns()) {
+        for (IColumnDescription columnDescription : describeColumns()) {
             if (sb.length() > 0) {
                 sb.append(", ");
             }
@@ -89,7 +98,7 @@ public class BOM implements IRelation {
 
     public double totalCost() {
         double cost = 0;
-        for (IPartComparable row: rows) {
+        for (IPartComparable row : rows) {
             BOMRow bomRow = (BOMRow) row;
             cost += bomRow.getCost();
         }
@@ -98,7 +107,7 @@ public class BOM implements IRelation {
 
     public int partCount() {
         int count = 0;
-        for (IPartComparable row: rows) {
+        for (IPartComparable row : rows) {
             BOMRow bomRow = (BOMRow) row;
             count += bomRow.getQuantity();
         }
@@ -106,11 +115,20 @@ public class BOM implements IRelation {
     }
 
     public boolean isValid() {
-        for (IPartComparable row: rows) {
+        for (IPartComparable row : rows) {
             if (!row.getPart().isValid()) {
                 return false;
             }
         }
         return true;
+    }
+
+    public int getMaximumParts() {
+        return maximumParts;
+    }
+
+    public BOM setMaximumParts(int maximumParts) {
+        this.maximumParts = maximumParts;
+        return this;
     }
 }

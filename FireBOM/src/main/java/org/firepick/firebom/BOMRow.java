@@ -29,6 +29,7 @@ import java.text.Format;
 
 public class BOMRow extends PartUsage implements IRow, IPartComparable {
     private BOM bom;
+    private boolean marked;
 
     public BOMRow(BOM bom, Part part) {
         this.bom = bom;
@@ -55,30 +56,21 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
             value = getPart().getTitle();
         } else if (index == BOMColumnDescription.VENDOR.getIndex()) {
             value = getVendor();
+        } else if (index == BOMColumnDescription.PROJECT.getIndex()) {
+            value = getPart().getProject();
         }
         return value;
     }
 
     @Override
     public int compareTo(IPartComparable that) {
-        String id1 = getPart().getId();
-        String id2 = that.getPart().getId();
-        if (id1 == id2) {
-            return 0;
-        }
-        if (id1 == null) {
-            return -1;
-        }
-        if (id2 == null) {
-            return 1;
-        }
-        return id1.compareTo(id2);
+        return getPart().compareTo(that.getPart());
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (IColumnDescription columnDescription: BOMColumnDescription.values()) {
+        for (IColumnDescription columnDescription : BOMColumnDescription.values()) {
             Format format = columnDescription.getFormat();
             Object value = item(columnDescription.getIndex());
             if (sb.length() > 0) {
@@ -91,5 +83,14 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
             }
         }
         return sb.toString();
+    }
+
+    public boolean isMarked() {
+        return marked;
+    }
+
+    public BOMRow setMarked(boolean marked) {
+        this.marked = marked;
+        return this;
     }
 }
