@@ -35,15 +35,15 @@ public class BOMTest {
 
     @Before
     public void setup() {
-        partFactory = new PartFactory();
+        partFactory = PartFactory.getInstance();
     }
 
     @Test
     public void testBadUrl() {
-        IOExceptionPartFactory factory = new IOExceptionPartFactory();
+        PartFactory factory = PartFactory.getInstance();
         Part part = null;
         try {
-            part = factory.createPart(new URL("http://shpws.me/nekC"));
+            part = factory.createPart(new URL("http://shpws.me/badbadurl"));
         }
         catch (IOException e) {
             fail();
@@ -59,24 +59,6 @@ public class BOMTest {
         BOM bom = new BOM();
         bom.addPart(part, 1);
         assertFalse(bom.isValid());
-        new RelationPrinter().print(bom, System.out);
-
-        factory.setAvailable(true);
-        part.validate();
-        assertFalse(part.isValid());
-
-        try {
-            Thread.sleep(factory.getValidationMillis());
-        }
-        catch (InterruptedException e) {
-            fail();
-        }
-        part.validate();
-        assertTrue(part.isValid());
-
-        bom = new BOM();
-        bom.addPart(part, 1);
-        assertTrue(bom.isValid());
         new RelationPrinter().print(bom, System.out);
     }
 

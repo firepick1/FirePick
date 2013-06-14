@@ -23,11 +23,30 @@ package org.firepick.firebom;
 
 import org.junit.Test;
 
-import java.io.IOException;
+import java.io.*;
+
+import static org.junit.Assert.assertEquals;
 
 public class MainTest {
     @Test
     public void testHelp() throws IOException {
-        Main.main(new String[0]);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BufferedOutputStream bos = new BufferedOutputStream(baos);
+        PrintStream printWriter = new PrintStream(bos);
+        Main.mainStream(new String[0], printWriter);
+        printWriter.flush();
+        String help = baos.toString();
+        System.out.println(help);
+        assert(help.contains("USAGE"));
+        assert(help.contains("OPTIONS"));
+        assert(help.contains("EXAMPLES"));
+    }
+
+    @Test
+    public void testBOMFactory() {
+        BOMFactory bomFactory = new BOMFactory(System.out);
+        assertEquals(BOMFactory.OutputType.DEFAULT, bomFactory.getOutputType());
+        bomFactory.setOutputType(BOMFactory.OutputType.MARKDOWN);
+        assertEquals(BOMFactory.OutputType.MARKDOWN, bomFactory.getOutputType());
     }
 }

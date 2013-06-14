@@ -33,7 +33,7 @@ public class McMasterCarrPart extends Part {
     private static String queryUrlTemplate =
             "http://www.mcmaster.com/WebParts/Ordering/InLnOrdWebPart/InLnOrdWebPart.aspx?cntnridtxt=InLnOrd_ItmBxRw_1_{PART}&partnbrtxt={PART}&multipartnbrind=false&partnbrslctdmsgcntxtnm=FullPrsnttn&autoslctdind=false";
 
-    public McMasterCarrPart(PartFactory partFactory, URL url) throws IOException {
+    public McMasterCarrPart(PartFactory partFactory, URL url) {
         super(partFactory, url);
     }
 
@@ -41,12 +41,12 @@ public class McMasterCarrPart extends Part {
     protected void update() throws IOException {
         String partNum = getUrl().toString().replace("http://www.mcmaster.com/#", "");
         String queryUrl = queryUrlTemplate.replaceAll("\\{PART\\}", partNum);
-        String content = partFactory.urlTextContent(new URL(queryUrl));
-        String price = partFactory.scrapeText(content, startPrice, endPrice);
+        String content = PartFactory.getInstance().urlTextContent(new URL(queryUrl));
+        String price = PartFactory.getInstance().scrapeText(content, startPrice, endPrice);
         if (price != null) {
             setPackageCost(Double.parseDouble(price));
         }
-        String packageUnits = partFactory.scrapeText(content, startPackageUnits, endPackageUnits);
+        String packageUnits = PartFactory.getInstance().scrapeText(content, startPackageUnits, endPackageUnits);
         if (packageUnits != null) {
             setPackageUnits(Double.parseDouble(packageUnits));
         }

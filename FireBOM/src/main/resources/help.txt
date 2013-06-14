@@ -4,8 +4,11 @@ FireBOM searches the web for parts, prices and quantities to construct
 a Build Of Materials (BOM) for you.
 
 USAGE:
-java -jar firebom.jar {options} {url}
+java -cp target/lib -jar target/Fire*.jar {options} {url}
 
 OPTIONS:
--markdown Print BOM using Markdown wiki syntac
--csv      Print BOM using comma separated values
+-markdown Print BOM using Markdown wiki syntax
+-csv      Print BOM using comma separated values (default)
+
+EXAMPLES:
+java -cp target/lib -jar target/Fire*.jar https://github.com/firepick1/FirePick/wiki/D7IH

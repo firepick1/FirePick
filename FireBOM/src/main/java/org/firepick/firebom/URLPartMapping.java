@@ -21,31 +21,31 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.regex.Pattern;
+import java.util.Map;
 
-public class GitHubPart extends HtmlPart {
-    private static Pattern startId = Pattern.compile("<title>");
-    private static Pattern endId = Pattern.compile("[< ]");
-    private static Pattern startTitle = Pattern.compile("<span class=\"octicon octicon-link\"></span></a>");
-    private static Pattern endTitle = Pattern.compile("</h");
+public class URLPartMapping implements Map.Entry<URL, Part> {
+    private URL url;
+    private Part part;
 
-    public GitHubPart(PartFactory partFactory, URL url) {
-        super(partFactory, url);
+    public URLPartMapping(URL url, Part part) {
+        this.url = url;
+        this.part = part;
     }
 
     @Override
-    protected void parseContent(String content) throws IOException {
-        super.parseContent(content);
-        String id = PartFactory.getInstance().scrapeText(content, startId, endId);
-        setId(id);
-        String title = PartFactory.getInstance().scrapeText(content, startTitle, endTitle);
-        if (title != null) {
-            setTitle(title);
-        }
-        String [] paths = getUrl().getPath().split("/");
-        setProject(paths[2]);
+    public URL getKey() {
+        return url;
     }
 
+    @Override
+    public Part getValue() {
+        return part;
+    }
+
+    @Override
+    public Part setValue(Part value) {
+        part = value;
+        return part;
+    }
 }

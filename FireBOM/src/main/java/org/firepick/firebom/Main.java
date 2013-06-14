@@ -21,72 +21,55 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.relation.RelationPrinter;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class Main {
-    static OutputType outputType = OutputType.DEFAULT;
-    static URL url;
-
     public static void main(String[] args) throws IOException {
-        if (parseArgs(args)) {
-            PartFactory partFactory = new PartFactory();
-            BOM bom = new BOM();
-            Part part = partFactory.createPart(url);
-            bom.addPart(part, 1);
-
-            switch (outputType) {
-                case MARKDOWN:
-                    new BOMMarkdownPrinter().print(bom, System.out);
-                    break;
-                default:
-                case CSV:
-                    new RelationPrinter().print(bom, System.out);
-                    break;
-            }
-        }
+        mainStream(args, System.out);
     }
 
-    private static boolean parseArgs(String[] args) throws IOException {
-        if (args.length <= 0) {
-            printHelp();
-            return false;
+    public static void mainStream(String[] args, PrintStream printStream) throws IOException {
+        BOMFactory bomFactory = new BOMFactory(printStream);
+
+        if (!parseArgs(args, bomFactory)) {
+            printHelp(printStream);
         }
-        for (String arg : args) {
-            System.out.println(arg);
+        bomFactory.shutdown();
+    }
+
+
+    private static boolean parseArgs(String[] args, BOMFactory bomFactory) throws IOException {
+        int urlCount = 0;
+
+        for (String arg: args) {
             if ("-markdown".equalsIgnoreCase(arg)) {
-                outputType = OutputType.MARKDOWN;
-            }
-            if ("-csv".equalsIgnoreCase(arg)) {
-                outputType = OutputType.CSV;
-            }
-            if (arg.startsWith("http") || arg.startsWith("file")) {
-                url = new URL(arg);
+                bomFactory.setOutputType(BOMFactory.OutputType.MARKDOWN);
+            } else if ("-csv".equalsIgnoreCase(arg)) {
+                bomFactory.setOutputType(BOMFactory.OutputType.CSV);
+            } else {
+                try {
+                    URL url = new URL(arg);
+                    urlCount++;
+                    bomFactory.printBOM(url);
+                } catch (MalformedURLException e) {
+                    return false;
+                }
             }
         }
-        return url != null;
+        return urlCount > 0;
     }
 
-    public static void printHelp() throws IOException {
+    public static void printHelp(PrintStream printStream) throws IOException {
         InputStream is = Main.class.getResourceAsStream("/help.txt");
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
 
         while (br.ready()) {
             String line = br.readLine();
-            System.out.println(line);
+            printStream.println(line);
         }
-    }
-
-    enum OutputType {
-        DEFAULT,
-        MARKDOWN,
-        CSV
     }
 
 }

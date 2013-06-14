@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.List;
 
 public class HtmlPart extends Part {
+    private URL sourceUrl;
 
     public HtmlPart(PartFactory partFactory, URL url) {
         super(partFactory, url);
@@ -42,8 +43,8 @@ public class HtmlPart extends Part {
                 if (sourceList.size() == 0) {
                     throw new RuntimeException("GitHub page has no @Sources tag");
                 }
-                URL sourceUrl = parseLink(sourceList.get(0));
-                Part sourcePart = partFactory.createPart(sourceUrl);
+                sourceUrl = parseLink(sourceList.get(0));
+                Part sourcePart = PartFactory.getInstance().createPart(sourceUrl);
                 setVendor(sourcePart.getVendor());
                 cost += sourcePart.getUnitCost();
             } else if (ulPart.contains("@Require")) {
@@ -52,7 +53,7 @@ public class HtmlPart extends Part {
                 for (String required : requiredItems) {
                     URL link = parseLink(required);
                     double quantity = parseQuantity(required, 1);
-                    Part part = partFactory.createPart(link);
+                    Part part = PartFactory.getInstance().createPart(link);
                     PartUsage partUsage = new PartUsage().setPart(part).setQuantity(quantity);
                     requiredParts.add(partUsage);
                     cost += quantity * part.getUnitCost();
@@ -61,6 +62,11 @@ public class HtmlPart extends Part {
         }
         setPackageCost(cost);
     }
+
+    public URL getSourceUrl() {
+        return sourceUrl == null ? super.getSourceUrl() : sourceUrl;
+    }
+
 }
 
 

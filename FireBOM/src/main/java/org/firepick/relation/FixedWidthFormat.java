@@ -29,7 +29,7 @@ public class FixedWidthFormat extends Format {
 
     public FixedWidthFormat(int width, Format format) {
         this.format = format;
-        this.width = width;
+        this.setWidth(width);
     }
 
     @Override
@@ -39,16 +39,18 @@ public class FixedWidthFormat extends Format {
             toAppendTo.append(obj);
         } else if (obj == null) {
             toAppendTo.append("null");
-        } else {
+        } else if (format != null) {
                 format.format(obj, toAppendTo, pos);
+        } else {
+            toAppendTo.append(obj.toString());
         }
-        int padding = width - (toAppendTo.length() - length);
+        int padding = getWidth() - (toAppendTo.length() - length);
         for (int iPad = 0; iPad < padding; iPad++) {
-            if (format instanceof NumberFormat) {
-                toAppendTo.insert(0, "\u2007");
-            } else {
+//            if (format instanceof NumberFormat) {
+//                toAppendTo.insert(0, "\u2007");
+//            } else {
                 toAppendTo.insert(0, " ");
-            }
+//            }
         }
         return toAppendTo;
     }
@@ -60,5 +62,14 @@ public class FixedWidthFormat extends Format {
 
     public Format getFormat() {
         return format;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public FixedWidthFormat setWidth(int width) {
+        this.width = width;
+        return this;
     }
 }

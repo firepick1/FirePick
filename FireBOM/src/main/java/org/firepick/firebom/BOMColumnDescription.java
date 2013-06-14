@@ -31,26 +31,28 @@ import java.util.List;
 
 public class BOMColumnDescription<T> extends ColumnDescription<T> {
     public final static BOMColumnDescription<String> TITLE
-            = new BOMColumnDescription<String>(0, "title", "TITLE", null, new StringAggregator("TOTAL"));
+            = new BOMColumnDescription<String>(0, "title", "TITLE", 0, null, new StringAggregator("TOTAL"));
     public final static BOMColumnDescription<String> ID
-            = new BOMColumnDescription<String>(1, "id", "ID", new FixedWidthFormat(4, new TextFormat()), new CountingAggregator());
+            = new BOMColumnDescription<String>(1, "id", "ID", 4, new TextFormat(), new CountingAggregator());
     public final static BOMColumnDescription<Double> QUANTITY
-            = new BOMColumnDescription<Double>(2, "qty", "QTY", new FixedWidthFormat(3, new DecimalFormat()), new DoubleAggregator(NumericAggregationType.SUM));
+            = new BOMColumnDescription<Double>(2, "qty", "QTY", 3, new DecimalFormat(), new DoubleAggregator(NumericAggregationType.SUM));
     public final static BOMColumnDescription<Double> COST
-            = new BOMColumnDescription<Double>(3, "cost", "COST", new FixedWidthFormat(9, NumberFormat.getCurrencyInstance()), new DoubleAggregator(NumericAggregationType.SUM));
-    public final static BOMColumnDescription<String > VENDOR
-            = new BOMColumnDescription<String>(4, "vendor", "VENDOR", new FixedWidthFormat(20, new TextFormat()), new StringAggregator("TOTAL"));
-    public final static ColumnDescription<String> URL
-            = new BOMColumnDescription<String>(5, "url", "URL", null, new StringAggregator("TOTAL"));
-    public final static BOMColumnDescription<String > PROJECT
-            = new BOMColumnDescription<String>(6, "project", "PROJECT", new FixedWidthFormat(10, new TextFormat()), new StringAggregator("TOTAL"));
+            = new BOMColumnDescription<Double>(3, "cost", "COST", 9, NumberFormat.getCurrencyInstance(), new DoubleAggregator(NumericAggregationType.SUM));
+    public final static BOMColumnDescription<String> VENDOR
+            = new BOMColumnDescription<String>(4, "vendor", "VENDOR", 20, new TextFormat(), new StringAggregator("TOTAL"));
+    public final static BOMColumnDescription<String> URL
+            = new BOMColumnDescription<String>(5, "url", "URL", 0, null, new StringAggregator("TOTAL"));
+    public final static BOMColumnDescription<String> PROJECT
+            = new BOMColumnDescription<String>(6, "project", "PROJECT", 10, new TextFormat(), new StringAggregator("TOTAL"));
+    public final static BOMColumnDescription<String> SOURCE
+            = new BOMColumnDescription<String>(7, "source", "SOURCE", 0, null, new StringAggregator("TOTAL"));
 
-    public BOMColumnDescription(int index, String id, String title, Format format, IAggregator<T> aggregator) {
-        setIndex(index).setAggregator(aggregator).setId(id).setTitle(title).setFormat(format);
+    public BOMColumnDescription(int index, String id, String title, int width, Format format, IAggregator<T> aggregator) {
+        setIndex(index).setAggregator(aggregator).setId(id).setTitle(title).setFormat(format).setWidth(width);
     }
 
-    public static List<IColumnDescription> values() {
-        ArrayList<IColumnDescription> list = new ArrayList<IColumnDescription>();
+    public static List<BOMColumnDescription> values() {
+        ArrayList<BOMColumnDescription> list = new ArrayList<BOMColumnDescription>();
         list.add(PROJECT);
         list.add(ID);
         list.add(QUANTITY);
@@ -58,6 +60,17 @@ public class BOMColumnDescription<T> extends ColumnDescription<T> {
         list.add(VENDOR);
         list.add(TITLE);
         list.add(URL);
+        list.add(SOURCE);
         return list;
+    }
+
+    @Override
+    public BOMColumnDescription clone() {
+        try {
+            return (BOMColumnDescription) super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

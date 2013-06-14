@@ -23,7 +23,7 @@ package org.firepick.relation;
 
 import java.text.Format;
 
-public interface IColumnDescription<T> {
+public interface IColumnDescription<T> extends Cloneable {
     String getTitle();
     String getId();
     Format getFormat();

@@ -26,7 +26,7 @@ import java.text.Format;
 public class ColumnDescription<T> implements IColumnDescription<T> {
     private String id;
     private String title;
-    private Format format;
+    private FixedWidthFormat format;
     private int index;
     private IAggregator<T> aggregator;
 
@@ -53,7 +53,7 @@ public class ColumnDescription<T> implements IColumnDescription<T> {
     }
 
     public ColumnDescription setFormat(Format format) {
-        this.format = format;
+        this.format = new FixedWidthFormat(0, format);
         return this;
     }
 
@@ -75,4 +75,12 @@ public class ColumnDescription<T> implements IColumnDescription<T> {
         return this;
     }
 
+    public int getWidth() {
+        return format == null ? 0 : format.getWidth();
+    }
+
+    public ColumnDescription setWidth(int width) {
+        format.setWidth(width);
+        return this;
+    }
 }

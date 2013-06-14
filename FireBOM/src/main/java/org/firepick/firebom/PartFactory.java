@@ -21,12 +21,15 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,23 +37,30 @@ import java.util.regex.Pattern;
 import static java.util.Locale.US;
 
 public class PartFactory {
+    private static PartFactory partFactory;
     private String accept;
     private String language;
     private String userAgent;
     private long validationMillis;
-    private HashMap<URL, Part> partMap = new HashMap<URL, Part>();
 
-    public PartFactory() {
-        this(US);
+    protected PartFactory() {
+        this(Locale.getDefault());
     }
 
-    public PartFactory(Locale locale) {
+    protected PartFactory(Locale locale) {
         setValidationMillis(5000);
         if (locale == US) {
             accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
             language = "en-US,en;q=0.8";
             userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.94 Safari/537.36";
         }
+    }
+
+    public static PartFactory getInstance() {
+        if (partFactory == null) {
+            partFactory = new PartFactory();
+        }
+        return partFactory;
     }
 
     public String urlTextContent(URL url) throws IOException {
@@ -89,13 +99,25 @@ public class PartFactory {
         return result;
     }
 
-    public Part createPart(URL url) throws IOException {
-        if (partMap.containsKey(url)) {
-            return partMap.get(url);
+    private Ehcache getCache() {
+        return CacheManager.getInstance().addCacheIfAbsent("FireBOM");
+    }
+    public Part createPart(URL url) {
+        Element cacheElement = getCache().get(url);
+        if (cacheElement != null) {
+            return (Part) cacheElement.getObjectValue();
         }
         String host = url.getHost();
-        Part part;
+        Part part = createPartForHost(url, host);
 
+        cacheElement = new Element(url, part);
+        getCache().put(cacheElement);
+
+        return part;
+    }
+
+    private Part createPartForHost(URL url, String host)  {
+        Part part;
         if ("www.shapeways.com".equalsIgnoreCase(host)) {
             part = new ShapewaysPart(this, url);
         } else if ("shpws.me".equalsIgnoreCase(host)) {
@@ -111,9 +133,6 @@ public class PartFactory {
         } else {
             part = new HtmlPart(this, url);
         }
-
-        partMap.put(url, part);
-
         return part;
     }
 

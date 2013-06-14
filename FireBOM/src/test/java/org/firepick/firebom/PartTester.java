@@ -79,4 +79,9 @@ public class PartTester {
         assertEquals(partId + " unit cost", unitCost, partUsage.getPart().getUnitCost(), 0);
         return this;
     }
+
+    public Part getPart() {
+        return part;
+    }
+
 }

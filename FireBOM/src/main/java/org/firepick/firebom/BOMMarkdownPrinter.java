@@ -35,6 +35,20 @@ public class BOMMarkdownPrinter extends RelationPrinter {
 
     public BOMMarkdownPrinter() {
         super.setPrintTitleRow(false);
+        super.setPrintTotalRow(false);
+    }
+
+    @Override
+    public RelationPrinter print(IRelation relation, PrintStream printStream) {
+        BOM bom = (BOM)  relation;
+        printStream.print("#### Bill Of Materials (");
+        DecimalFormat currencyFormat = (DecimalFormat) NumberFormat.getCurrencyInstance();
+        printStream.print(currencyFormat.format(bom.totalCost()));
+        printStream.print("; ");
+        printStream.print(bom.partCount());
+        printStream.println(" parts)");
+
+        return super.print(relation, printStream);
     }
 
     @Override
@@ -50,7 +64,7 @@ public class BOMMarkdownPrinter extends RelationPrinter {
         printStream.print(" ");
         printColumnValue(printStream, BOMColumnDescription.TITLE, row);
         printStream.print("](");
-        printColumnValue(printStream, BOMColumnDescription.URL, row);
+        printColumnValue(printStream, BOMColumnDescription.SOURCE, row);
         printStream.print(")");
         printStream.println();
     }

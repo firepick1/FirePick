@@ -22,26 +22,27 @@ package org.firepick.firebom;
  */
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-public class ShapewaysPart extends Part {
+public class ShapewaysPart extends Part  {
     private static Pattern startId = Pattern.compile("<title>");
     private static Pattern endId = Pattern.compile(" ");
     private static Pattern startPrice = Pattern.compile(" <div class=\"price\">\\$");
     private static Pattern endPrice = Pattern.compile("</div>");
 
-    public ShapewaysPart(PartFactory partFactory, URL url) throws IOException {
+    public ShapewaysPart(PartFactory partFactory, URL url)  {
         super(partFactory, url);
     }
 
     @Override
     protected void parseContent(String content) throws IOException {
-        String price = partFactory.scrapeText(content, startPrice, endPrice);
+        String price = PartFactory.getInstance().scrapeText(content, startPrice, endPrice);
         if (price != null) {
             setPackageCost(Double.parseDouble(price));
         }
-        String id = partFactory.scrapeText(content, startId, endId);
+        String id = PartFactory.getInstance().scrapeText(content, startId, endId);
         if (id != null) {
             setId(id);
         }

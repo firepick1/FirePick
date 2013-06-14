@@ -22,15 +22,17 @@ package org.firepick.firebom;
  */
 
 
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class PartFactoryTest {
-    private PartFactory partFactory;
+    private static PartFactory partFactory;
 
-    @Before
-    public void setup() {
-        partFactory = new PartFactory();
+    @BeforeClass
+    public static void setup() {
+        partFactory = PartFactory.getInstance();
     }
 
     @Test
@@ -63,7 +65,7 @@ public class PartFactoryTest {
     public void testGitHub() throws Exception {
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/X523")
                 .testId("X523").testPackageCost(.63).testPackageUnits(1).testUnitCost(.63).testRequiredParts(0).testProject("FirePick");
-        new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH")
+        Part part = new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH")
                 .testId("D7IH").testUnitCost(11.6698).testPackageCost(11.6698).testPackageUnits(1)
                 .testRequiredParts(5)
                 .testRequiredPart(0, "DB16", 1, 1.50)
@@ -72,6 +74,7 @@ public class PartFactoryTest {
                 .testRequiredPart(3, "F50N", 1, 0.0173)
                 .testRequiredPart(4, "X50K", 1, 0.1932)
                 .testProject("FirePick")
+                .getPart()
         ;
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/F3WF")
                 .testId("F3WF").testUnitCost(0.0227).testPackageCost(0.0227).testPackageUnits(1);

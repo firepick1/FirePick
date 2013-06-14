@@ -26,18 +26,19 @@ import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public abstract class Part implements IPartComparable {
+public abstract class Part implements IPartComparable, Serializable {
     private static Logger logger = LoggerFactory.getLogger(Part.class);
     private static Pattern startLink = Pattern.compile("<a\\s+href=\"");
     private static Pattern endLink = Pattern.compile("\"");
-    protected final PartFactory partFactory;
     protected List<String> sourceList;
     protected List<PartUsage> requiredParts;
     private String id;
@@ -50,9 +51,9 @@ public abstract class Part implements IPartComparable {
     private long lastValidationMillis;
     private boolean isValid;
     private int validating;
+    private Date validationDate;
 
     public Part(PartFactory partFactory) {
-        this.partFactory = partFactory;
         setPackageUnits(1);
         requiredParts = new ArrayList<PartUsage>();
     }
@@ -79,6 +80,10 @@ public abstract class Part implements IPartComparable {
     public Part setUrl(URL url) {
         this.url = url;
         return this;
+    }
+
+    public URL getSourceUrl() {
+        return url;
     }
 
     public double getPackageCost() {
@@ -110,7 +115,7 @@ public abstract class Part implements IPartComparable {
         if (validating == 0 && !isValid) {
             validating++;
             long elapsedMillis = System.currentTimeMillis() - lastValidationMillis;
-            if (elapsedMillis > partFactory.getValidationMillis()) {
+            if (elapsedMillis > PartFactory.getInstance().getValidationMillis()) {
                 try {
                     clear();
                     update();
@@ -129,7 +134,7 @@ public abstract class Part implements IPartComparable {
     }
 
     protected void update() throws IOException {
-        String content = partFactory.urlTextContent(getUrl());
+        String content = PartFactory.getInstance().urlTextContent(getUrl());
         parseContent(content);
     }
 
@@ -151,7 +156,19 @@ public abstract class Part implements IPartComparable {
     }
 
     public void setValid(boolean valid) {
+        if (valid) {
+            validationDate = new Date();
+        }
         isValid = valid;
+    }
+
+    public int secondsSinceValidation() {
+        if (getValidationDate() == null) {
+            return Integer.MAX_VALUE;
+        }
+        Date now = new Date();
+        long seconds = (now.getTime() - getValidationDate().getTime()) / 1000;
+        return (int) seconds;
     }
 
     protected List<String> parseListItemStrings(String ul) throws IOException {
@@ -165,7 +182,7 @@ public abstract class Part implements IPartComparable {
     }
 
     protected URL parseLink(String value) throws MalformedURLException {
-        String url = partFactory.scrapeText(value, startLink, endLink);
+        String url = PartFactory.getInstance().scrapeText(value, startLink, endLink);
         return new URL(getUrl(), url);
     }
 
@@ -244,5 +261,9 @@ public abstract class Part implements IPartComparable {
     public Part setProject(String project) {
         this.project = project;
         return this;
+    }
+
+    public Date getValidationDate() {
+        return validationDate;
     }
 }

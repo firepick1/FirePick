@@ -36,8 +36,8 @@ public class BOM implements IRelation {
     public List<IColumnDescription> describeColumns() {
         if (columnDescriptions == null) {
             columnDescriptions = new ArrayList<IColumnDescription>();
-            for (IColumnDescription columnDescription : BOMColumnDescription.values()) {
-                columnDescriptions.add(columnDescription);
+            for (BOMColumnDescription columnDescription : BOMColumnDescription.values()) {
+                columnDescriptions.add(columnDescription.clone());
             }
         }
         return Collections.unmodifiableList(columnDescriptions);

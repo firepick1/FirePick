@@ -43,19 +43,19 @@ public class MisumiPart extends Part {
     
     @Override
     protected void parseContent(String content) throws IOException {
-        String item = partFactory.scrapeText(content, startItem, endItem);
+        String item = PartFactory.getInstance().scrapeText(content, startItem, endItem);
         item = item.substring(item.length()-11);
-        String id = partFactory.scrapeText(getUrl().toString(), startId, endId);
+        String id = PartFactory.getInstance().scrapeText(getUrl().toString(), startId, endId);
         setId(id);
         String priceUrl = priceTemplate.replaceAll("\\{PART\\}",id);
-        String partInfo = partFactory.urlTextContent(new URL(priceUrl));
-        String price = partFactory.scrapeText(partInfo, startPrice, endPrice);
+        String partInfo = PartFactory.getInstance().urlTextContent(new URL(priceUrl));
+        String price = PartFactory.getInstance().scrapeText(partInfo, startPrice, endPrice);
         if (price != null) {
             setPackageCost(Double.parseDouble(price));
         }
         String packageUrl = packageTemplate.replaceAll("\\{ITEMCD\\}", item);
-        String packageText = partFactory.urlTextContent(new URL(packageUrl));
-        String packageUnits = partFactory.scrapeText(packageText, startPackage, endPackage);
+        String packageText = PartFactory.getInstance().urlTextContent(new URL(packageUrl));
+        String packageUnits = PartFactory.getInstance().scrapeText(packageText, startPackage, endPackage);
         if (packageUnits != null) {
             setPackageUnits(Double.parseDouble(packageUnits));
         }
