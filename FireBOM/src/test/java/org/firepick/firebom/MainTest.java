@@ -44,7 +44,7 @@ public class MainTest {
 
     @Test
     public void testBOMFactory() {
-        BOMFactory bomFactory = new BOMFactory(System.out);
+        BOMFactory bomFactory = new BOMFactory();
         assertEquals(BOMFactory.OutputType.DEFAULT, bomFactory.getOutputType());
         bomFactory.setOutputType(BOMFactory.OutputType.MARKDOWN);
         assertEquals(BOMFactory.OutputType.MARKDOWN, bomFactory.getOutputType());

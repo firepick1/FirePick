@@ -24,22 +24,43 @@ package org.firepick.firebom;
 import org.firepick.relation.IColumnDescription;
 import org.firepick.relation.IRelation;
 import org.firepick.relation.IRow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.net.URL;
 import java.util.*;
 
 public class BOM implements IRelation {
+    private static Logger logger = LoggerFactory.getLogger(BOM.class);
+
+    public final static String UNRESOLVED = "(Unresolved)";
     private List<IColumnDescription> columnDescriptions;
     private TreeSet<IPartComparable> rows = new TreeSet<IPartComparable>();
     private int maximumParts;
     private Map<BOMColumn, BOMColumnDescription> columnMap = new HashMap<BOMColumn, BOMColumnDescription>();
+    private URL url;
+    private String title;
+    private boolean isResolved;
 
-    public BOM() {
+    public BOM(URL url) {
+        this.url = url;
+        this.title = UNRESOLVED;
         columnDescriptions = new ArrayList<IColumnDescription>();
         for (BOMColumn column : BOMColumn.values()) {
             BOMColumnDescription bomColumnDescription = BOMColumnDescription.create(column);
             columnDescriptions.add(bomColumnDescription);
             columnMap.put(column, bomColumnDescription);
         }
+    }
+
+    public synchronized BOM resolve(PartFactory partFactory) {
+        if (!isResolved) {
+            Part part = partFactory.createPart(url);
+            addPart(part, 1);
+            setResolved(true);
+            setTitle(part.getTitle());
+        }
+        return this;
     }
 
     @Override
@@ -69,7 +90,7 @@ public class BOM implements IRelation {
         return null;
     }
 
-    public BOMRow addPart(Part part, double quantity) {
+    protected BOMRow addPart(Part part, double quantity) {
         BOMRow bomRow = lookup(part);
         if (bomRow != null) {
             if (bomRow.isMarked()) {
@@ -83,6 +104,7 @@ public class BOM implements IRelation {
             bomRow = new BOMRow(this, part);
             bomRow.setQuantity(quantity);
             rows.add(bomRow);
+            logger.info("addPart({})", part.getId());
         }
         bomRow.setMarked(true);
         for (PartUsage partUsage : part.getRequiredParts()) {
@@ -137,6 +159,28 @@ public class BOM implements IRelation {
 
     public BOM setMaximumParts(int maximumParts) {
         this.maximumParts = maximumParts;
+        return this;
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public BOM setTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public boolean isResolved() {
+        return isResolved;
+    }
+
+    public BOM setResolved(boolean resolved) {
+        isResolved = resolved;
         return this;
     }
 }

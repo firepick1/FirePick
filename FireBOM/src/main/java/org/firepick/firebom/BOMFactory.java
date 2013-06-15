@@ -26,37 +26,66 @@ import org.firepick.relation.RelationPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class BOMFactory {
+public class BOMFactory implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(BOMFactory.class);
-
     private OutputType outputType = OutputType.DEFAULT;
-    private PrintStream printStream;
-
-    public BOMFactory(PrintStream printStream) {
-        this.printStream = printStream;
-    }
+    private final ConcurrentLinkedDeque<BOM> bomQueue = new ConcurrentLinkedDeque<BOM>();
+    private Thread worker;
+    private PartFactory partFactory;
+    private boolean workerPaused;
 
     public void shutdown() {
         logger.info("Shutting down Ehcache");
         CacheManager.getInstance().shutdown();
     }
 
-    public BOMFactory printBOM(URL partUrl)  {
-        BOM bom = new BOM();
-        Part part = PartFactory.getInstance().createPart(partUrl);
-        bom.addPart(part, 1);
+    public BOM create(URL url) {
+        BOM bom = new BOM(url);
+        synchronized (bomQueue) {
+            bomQueue.add(bom);
+            if (worker == null) {
+                worker = new Thread(this);
+                worker.start();
+            }
+        }
+        return bom;
+    }
 
+    @Override
+    public void run() {
+        for (; ; ) {
+            synchronized (bomQueue) {
+                if (bomQueue.size() == 0) {
+                    worker = null;
+                    return;
+                }
+            }
+
+            if (isWorkerPaused()) {
+                try {
+                    Thread.sleep(500);
+                }
+                catch (InterruptedException e) {
+                    logger.error("interrtupted", e);
+                }
+            } else {
+                BOM bom = bomQueue.removeFirst();
+                bom.resolve(getPartFactory());
+            }
+        }
+    }
+
+    public BOMFactory printBOM(PrintStream printStream, BOM bom) {
         switch (outputType) {
             case MARKDOWN:
                 new BOMMarkdownPrinter().print(bom, printStream);
                 break;
             case HTML_TABLE:
-                new BOMHtmlPrinter().setPrintHtmlWrapper(true).setTitle(part.getTitle()).print(bom, printStream);
+                new BOMHtmlPrinter().setPrintHtmlWrapper(true).setTitle(bom.getTitle()).print(bom, printStream);
                 break;
             default:
             case CSV:
@@ -73,6 +102,27 @@ public class BOMFactory {
 
     public BOMFactory setOutputType(OutputType outputType) {
         this.outputType = outputType;
+        return this;
+    }
+
+    public PartFactory getPartFactory() {
+        if (partFactory == null) {
+            setPartFactory(PartFactory.getInstance());
+        }
+        return partFactory;
+    }
+
+    public BOMFactory setPartFactory(PartFactory partFactory) {
+        this.partFactory = partFactory;
+        return this;
+    }
+
+    public boolean isWorkerPaused() {
+        return workerPaused;
+    }
+
+    public BOMFactory setWorkerPaused(boolean workerPaused) {
+        this.workerPaused = workerPaused;
         return this;
     }
 

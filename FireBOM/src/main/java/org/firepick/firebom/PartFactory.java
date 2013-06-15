@@ -42,6 +42,7 @@ public class PartFactory {
     private String language;
     private String userAgent;
     private long validationMillis;
+    private long urlRequests;
 
     protected PartFactory() {
         this(Locale.getDefault());
@@ -64,6 +65,7 @@ public class PartFactory {
     }
 
     public String urlTextContent(URL url) throws IOException {
+        urlRequests++;
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("Accept", accept);
         connection.setRequestProperty("Accept-Language", language);
@@ -102,6 +104,7 @@ public class PartFactory {
     private Ehcache getCache() {
         return CacheManager.getInstance().addCacheIfAbsent("FireBOM");
     }
+
     public Part createPart(URL url) {
         Element cacheElement = getCache().get(url);
         if (cacheElement != null) {
@@ -142,5 +145,9 @@ public class PartFactory {
 
     public void setValidationMillis(long validationMillis) {
         this.validationMillis = validationMillis;
+    }
+
+    public long getUrlRequests() {
+        return urlRequests;
     }
 }

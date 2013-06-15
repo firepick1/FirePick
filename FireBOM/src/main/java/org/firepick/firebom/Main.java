@@ -31,16 +31,16 @@ public class Main {
     }
 
     public static void mainStream(String[] args, PrintStream printStream) throws IOException {
-        BOMFactory bomFactory = new BOMFactory(printStream);
+        BOMFactory bomFactory = new BOMFactory();
 
-        if (!parseArgs(args, bomFactory)) {
+        if (!parseArgs(args, bomFactory, printStream)) {
             printHelp(printStream);
         }
         bomFactory.shutdown();
     }
 
 
-    private static boolean parseArgs(String[] args, BOMFactory bomFactory) throws IOException {
+    private static boolean parseArgs(String[] args, BOMFactory bomFactory, PrintStream printStream) throws IOException {
         int urlCount = 0;
 
         for (String arg: args) {
@@ -54,7 +54,8 @@ public class Main {
                 try {
                     URL url = new URL(arg);
                     urlCount++;
-                    bomFactory.printBOM(url);
+                    BOM bom = new BOM(url);
+                    bomFactory.printBOM(printStream, bom);
                 } catch (MalformedURLException e) {
                     return false;
                 }

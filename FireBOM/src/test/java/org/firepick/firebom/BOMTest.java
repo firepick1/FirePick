@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import static org.junit.Assert.*;
@@ -42,8 +43,10 @@ public class BOMTest {
     public void testBadUrl() {
         PartFactory factory = PartFactory.getInstance();
         Part part = null;
+        URL url = null;
         try {
-            part = factory.createPart(new URL("http://shpws.me/badbadurl"));
+            url = new URL("http://shpws.me/badbadurl");
+            part = factory.createPart(url);
         }
         catch (IOException e) {
             fail();
@@ -56,37 +59,39 @@ public class BOMTest {
         assertEquals("www.shapeways.com", part.getVendor());
         assertFalse(part.isValid());
 
-        BOM bom = new BOM();
-        bom.addPart(part, 1);
+        BOM bom = new BOM(url);
+        bom.resolve(partFactory);
         assertFalse(bom.isValid());
         new RelationPrinter().print(bom, System.out);
     }
 
     @Test
     public void testD7IH() throws Exception {
-        BOM bom = new BOM();
+        URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
+        BOM bom = new BOM(url);
         assertEquals(0, bom.getRowCount());
-        Part part = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
-        bom.addPart(part, 2);
+        bom.resolve(partFactory);
         assertEquals(6, bom.getRowCount());
         new RelationPrinter().print(bom, System.out);
-        assertEquals("Total cost: ", 27.1392, bom.totalCost(), 0);
-        assertEquals("Part count:", 12, bom.partCount());
+        assertEquals("Total cost: ", 13.5696, bom.totalCost(), 0);
+        assertEquals("Part count:", 6, bom.partCount());
     }
 
     @Test
     public void testD7IHMarkdown() throws Exception {
-        BOM bom = new BOM();
+        URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
+        BOM bom = new BOM(url);
         assertEquals(0, bom.getRowCount());
-        Part part = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
-        bom.addPart(part, 1);
+        bom.resolve(partFactory);
+        assertEquals(6, bom.getRowCount());
         assertEquals(6, bom.getRowCount());
         new BOMMarkdownPrinter().print(bom, System.out);
     }
 
     @Test
     public void testMaximumParts() throws IOException {
-        BOM bom = new BOM().setMaximumParts(5);
+        URL url = new URL("http://www.shapeways.com/badpart");
+        BOM bom = new BOM(url).setMaximumParts(5);
         assertEquals(5, bom.getMaximumParts());
         Exception caughtException = null;
         try {
@@ -108,18 +113,57 @@ public class BOMTest {
         URL url2 = Main.class.getResource("/evilPart2.html");
         System.out.println(url1);
         System.out.println(url2);
-        BOM bom = new BOM();
-        Part part1 = partFactory.createPart(url1);
+        BOM bom = new BOM(url1);
         Exception caughtException = null;
         try {
-            bom.addPart(part1, 1);
+            bom.resolve(partFactory);
         }
         catch (Exception e) {
             caughtException = e;
         }
         assert (caughtException instanceof ApplicationLimitsException);
         assertEquals(2, bom.getRowCount());
-        assert(caughtException.getMessage().contains("Recursive BOM"));
+        assert (caughtException.getMessage().contains("Recursive BOM"));
         new RelationPrinter().print(bom, System.out);
+    }
+
+    @Test
+    public void testBOMFactory() throws MalformedURLException, InterruptedException {
+        BOMFactory bomFactory = new BOMFactory();
+        URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
+        bomFactory.setWorkerPaused(true);
+        BOM bom = bomFactory.create(url);
+        assertEquals(url, bom.getUrl());
+        int iterations = 0;
+        assertEquals(0, bom.getRowCount());
+        bomFactory.printBOM(System.out, bom); // we can print an empty BOM
+        assertEquals(BOM.UNRESOLVED, bom.getTitle());
+        bomFactory.setWorkerPaused(false);
+        do {
+            iterations++;
+            System.out.print(".");
+            Thread.sleep(1000);
+        } while (!bom.isResolved());
+        System.out.println();
+        assert (iterations > 0);
+        assertEquals(6, bom.getRowCount());
+        assertEquals("Adjustable idler, 6-7mm belt, horizontal extrusions", bom.getTitle());
+        bomFactory.printBOM(System.out, bom);
+
+        // everything should be cached with no additional URL requests
+        long requests = partFactory.getUrlRequests();
+        bomFactory.setWorkerPaused(true);
+        bom = bomFactory.create(url);
+        assert (bomFactory.isWorkerPaused());
+        assert (!bom.isResolved());
+        Thread.sleep(1000);
+        bomFactory.setWorkerPaused(false);
+        Thread.sleep(1000);
+        assert (bom.isResolved());
+        assertEquals(6, bom.getRowCount());
+        assert (bom.isResolved());
+        assertEquals("Adjustable idler, 6-7mm belt, horizontal extrusions", bom.getTitle());
+        bomFactory.printBOM(System.out, bom);
+        assertEquals(requests, partFactory.getUrlRequests());
     }
 }
