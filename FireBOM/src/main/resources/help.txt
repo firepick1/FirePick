@@ -9,6 +9,7 @@ java -cp target/lib -jar target/Fire*.jar {options} {url}
 OPTIONS:
 -markdown Print BOM using Markdown wiki syntax
 -csv      Print BOM using comma separated values (default)
+-html     Print BOM as HTML table
 
 EXAMPLES:
 java -cp target/lib -jar target/Fire*.jar https://github.com/firepick1/FirePick/wiki/D7IH

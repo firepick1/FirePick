@@ -30,47 +30,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BOMColumnDescription<T> extends ColumnDescription<T> {
-    public final static BOMColumnDescription<String> TITLE
-            = new BOMColumnDescription<String>(0, "title", "TITLE", 0, null, new StringAggregator("TOTAL"));
-    public final static BOMColumnDescription<String> ID
-            = new BOMColumnDescription<String>(1, "id", "ID", 4, new TextFormat(), new CountingAggregator());
-    public final static BOMColumnDescription<Double> QUANTITY
-            = new BOMColumnDescription<Double>(2, "qty", "QTY", 3, new DecimalFormat(), new DoubleAggregator(NumericAggregationType.SUM));
-    public final static BOMColumnDescription<Double> COST
-            = new BOMColumnDescription<Double>(3, "cost", "COST", 9, NumberFormat.getCurrencyInstance(), new DoubleAggregator(NumericAggregationType.SUM));
-    public final static BOMColumnDescription<String> VENDOR
-            = new BOMColumnDescription<String>(4, "vendor", "VENDOR", 20, new TextFormat(), new StringAggregator("TOTAL"));
-    public final static BOMColumnDescription<String> URL
-            = new BOMColumnDescription<String>(5, "url", "URL", 0, null, new StringAggregator("TOTAL"));
-    public final static BOMColumnDescription<String> PROJECT
-            = new BOMColumnDescription<String>(6, "project", "PROJECT", 10, new TextFormat(), new StringAggregator("TOTAL"));
-    public final static BOMColumnDescription<String> SOURCE
-            = new BOMColumnDescription<String>(7, "source", "SOURCE", 0, null, new StringAggregator("TOTAL"));
 
-    public BOMColumnDescription(int index, String id, String title, int width, Format format, IAggregator<T> aggregator) {
+    private BOMColumnDescription(int index, String id, String title, int width, Format format, IAggregator<T> aggregator) {
         setIndex(index).setAggregator(aggregator).setId(id).setTitle(title).setFormat(format).setWidth(width);
     }
 
-    public static List<BOMColumnDescription> values() {
-        ArrayList<BOMColumnDescription> list = new ArrayList<BOMColumnDescription>();
-        list.add(PROJECT);
-        list.add(ID);
-        list.add(QUANTITY);
-        list.add(COST);
-        list.add(VENDOR);
-        list.add(TITLE);
-        list.add(URL);
-        list.add(SOURCE);
-        return list;
+    public static BOMColumnDescription create(BOMColumn column) {
+        switch (column) {
+            case ID:
+                return new BOMColumnDescription<String>(column.ordinal(), "id", "ID", 4, new TextFormat(), new CountingAggregator());
+            case TITLE:
+                return new BOMColumnDescription<String>(column.ordinal(), "title", "TITLE", 0, null, new StringAggregator("TOTAL"));
+            case QUANTITY:
+                return new BOMColumnDescription<Double>(column.ordinal(), "qty", "QTY", 3, new DecimalFormat(), new DoubleAggregator(NumericAggregationType.SUM));
+            case COST:
+                return new BOMColumnDescription<Double>(column.ordinal(), "cost", "COST", 9, NumberFormat.getCurrencyInstance(), new DoubleAggregator(NumericAggregationType.SUM));
+            case VENDOR:
+                return new BOMColumnDescription<String>(column.ordinal(), "vendor", "VENDOR", 20, new TextFormat(), new StringAggregator("TOTAL"));
+            case URL:
+                return new BOMColumnDescription<String>(column.ordinal(), "url", "URL", 0, null, new StringAggregator("TOTAL"));
+            case PROJECT:
+                return new BOMColumnDescription<String>(column.ordinal(), "project", "PROJECT", 10, new TextFormat(), new StringAggregator("TOTAL"));
+            case SOURCE:
+                return new BOMColumnDescription<String>(column.ordinal(), "source", "SOURCE", 0, null, new StringAggregator("TOTAL"));
+        }
+
+        throw new RuntimeException("Unknown BOMColumn " + column);
     }
 
-    @Override
-    public BOMColumnDescription clone() {
-        try {
-            return (BOMColumnDescription) super.clone();
-        }
-        catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

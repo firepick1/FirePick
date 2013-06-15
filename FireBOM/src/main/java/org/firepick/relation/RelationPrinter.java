@@ -47,15 +47,13 @@ public class RelationPrinter {
     }
 
     private void printRows(IRelation relation, PrintStream printStream) {
-        if (printTotalRow) {
-            for (IColumnDescription columnDescription: columnDescriptionList) {
-                columnDescription.getAggregator().clear();
-            }
-            printStream.println();
+        for (IColumnDescription columnDescription : columnDescriptionList) {
+            columnDescription.getAggregator().clear();
         }
 
-        for (IRow row: relation) {
-            printRow(printStream, row);
+        int iRow = 1;
+        for (IRow row : relation) {
+            printRow(printStream, row, iRow++);
         }
 
         if (printTotalRow) {
@@ -65,19 +63,19 @@ public class RelationPrinter {
 
     protected void printTotalRow(PrintStream printStream, IRelation relation) {
         int columns = 0;
-        for (IColumnDescription columnDescription: columnDescriptionList) {
+        for (IColumnDescription columnDescription : columnDescriptionList) {
             if (columns++ > 0) {
                 printStream.print(columnSeparator);
             }
             Object aggregate = columnDescription.getAggregator().getAggregate();
-            printValue(printStream, relation, columnDescription, aggregate);
+            printValue(printStream, columnDescription, aggregate);
         }
         printStream.println();
     }
 
-    protected void printRow(PrintStream printStream, IRow row) {
+    protected void printRow(PrintStream printStream, IRow row, int iRow) {
         int columns = 0;
-        for (IColumnDescription columnDescription: columnDescriptionList) {
+        for (IColumnDescription columnDescription : columnDescriptionList) {
             if (columns++ > 0) {
                 printStream.print(columnSeparator);
             }
@@ -90,12 +88,12 @@ public class RelationPrinter {
     }
 
     protected Object printColumnValue(PrintStream printStream, IColumnDescription columnDescription, IRow row) {
-        Object value = row.item(columnDescription.getIndex());
-        printValue(printStream, row.getRelation(), columnDescription, value);
+        Object value = row.item(columnDescription.getItemIndex());
+        printValue(printStream, columnDescription, value);
         return value;
     }
 
-    protected void printValue(PrintStream printStream, IRelation relation, IColumnDescription columnDescription, Object value) {
+    protected void printValue(PrintStream printStream, IColumnDescription columnDescription, Object value) {
         Format format = columnDescription.getFormat();
         if (format == null) {
             printStream.print(value);
@@ -106,13 +104,14 @@ public class RelationPrinter {
 
     private void printColumnTitles(PrintStream printStream, IRelation relation) {
         int columns = 0;
-        for (IColumnDescription columnDescription: columnDescriptionList) {
+        for (IColumnDescription columnDescription : columnDescriptionList) {
             if (columns++ > 0) {
                 printStream.print(columnSeparator);
             }
             String title = columnDescription.getTitle();
-            printValue(printStream, relation, columnDescription, title);
+            printValue(printStream, columnDescription, title);
         }
+        printStream.println();
     }
 
     public List<IColumnDescription> getColumnDescriptionList() {

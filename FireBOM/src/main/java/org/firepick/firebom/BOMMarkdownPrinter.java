@@ -21,14 +21,12 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.relation.FixedWidthFormat;
 import org.firepick.relation.IRelation;
 import org.firepick.relation.IRow;
 import org.firepick.relation.RelationPrinter;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
-import java.text.Format;
 import java.text.NumberFormat;
 
 public class BOMMarkdownPrinter extends RelationPrinter {
@@ -52,20 +50,24 @@ public class BOMMarkdownPrinter extends RelationPrinter {
     }
 
     @Override
-    protected void printRow(PrintStream printStream, IRow row) {
-        printStream.print("1. [");
-        printColumnValue(printStream, BOMColumnDescription.COST, row);
-        printStream.print(" ");
-        printColumnValue(printStream, BOMColumnDescription.ID, row);
-        printStream.print("(");
-        printColumnValue(printStream, BOMColumnDescription.QUANTITY, row);
-        printStream.print(") ");
-        printColumnValue(printStream, BOMColumnDescription.VENDOR, row);
-        printStream.print(" ");
-        printColumnValue(printStream, BOMColumnDescription.TITLE, row);
+    protected void printRow(PrintStream printStream, IRow row, int iRow) {
+        BOMRow bomRow = (BOMRow) row;
+        BOM bom = (BOM) bomRow.getRelation();
+        printStream.print(iRow);
+        printStream.print(". ");
+        printColumnValue(printStream, bom.getColumn(BOMColumn.COST), row);
+        printStream.print(" [");
+        printColumnValue(printStream, bom.getColumn(BOMColumn.ID), row);
         printStream.print("](");
-        printColumnValue(printStream, BOMColumnDescription.SOURCE, row);
-        printStream.print(")");
+        printColumnValue(printStream, bom.getColumn(BOMColumn.URL), row);
+        printStream.print(") ");
+        printColumnValue(printStream, bom.getColumn(BOMColumn.QUANTITY), row);
+        printStream.print(" [");
+        printColumnValue(printStream, bom.getColumn(BOMColumn.VENDOR), row);
+        printStream.print("](");
+        printColumnValue(printStream, bom.getColumn(BOMColumn.SOURCE), row);
+        printStream.print(") ");
+        printColumnValue(printStream, bom.getColumn(BOMColumn.TITLE), row);
         printStream.println();
     }
 

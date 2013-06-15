@@ -1,4 +1,4 @@
-package org.firepick.relation;
+package org.firepick.firebom;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,12 +21,13 @@ package org.firepick.relation;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import java.text.Format;
-
-public interface IColumnDescription<T> extends Cloneable {
-    String getTitle();
-    String getId();
-    Format getFormat();
-    int getItemIndex();
-    IAggregator<T> getAggregator();
+public enum BOMColumn {
+    ID,
+    COST,
+    QUANTITY,
+    SOURCE,
+    URL,
+    TITLE,
+    VENDOR,
+    PROJECT
 }

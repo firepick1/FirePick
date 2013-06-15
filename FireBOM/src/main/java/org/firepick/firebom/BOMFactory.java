@@ -55,6 +55,9 @@ public class BOMFactory {
             case MARKDOWN:
                 new BOMMarkdownPrinter().print(bom, printStream);
                 break;
+            case HTML_TABLE:
+                new BOMHtmlPrinter().setPrintHtmlWrapper(true).setTitle(part.getTitle()).print(bom, printStream);
+                break;
             default:
             case CSV:
                 new RelationPrinter().print(bom, printStream);
@@ -76,6 +79,7 @@ public class BOMFactory {
     public enum OutputType {
         DEFAULT,
         MARKDOWN,
+        HTML_TABLE,
         CSV
     }
 

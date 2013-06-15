@@ -48,6 +48,8 @@ public class Main {
                 bomFactory.setOutputType(BOMFactory.OutputType.MARKDOWN);
             } else if ("-csv".equalsIgnoreCase(arg)) {
                 bomFactory.setOutputType(BOMFactory.OutputType.CSV);
+            } else if ("-html".equalsIgnoreCase(arg)) {
+                bomFactory.setOutputType(BOMFactory.OutputType.HTML_TABLE);
             } else {
                 try {
                     URL url = new URL(arg);

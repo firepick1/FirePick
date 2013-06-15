@@ -31,16 +31,24 @@ public class BOM implements IRelation {
     private List<IColumnDescription> columnDescriptions;
     private TreeSet<IPartComparable> rows = new TreeSet<IPartComparable>();
     private int maximumParts;
+    private Map<BOMColumn, BOMColumnDescription> columnMap = new HashMap<BOMColumn, BOMColumnDescription>();
+
+    public BOM() {
+        columnDescriptions = new ArrayList<IColumnDescription>();
+        for (BOMColumn column : BOMColumn.values()) {
+            BOMColumnDescription bomColumnDescription = BOMColumnDescription.create(column);
+            columnDescriptions.add(bomColumnDescription);
+            columnMap.put(column, bomColumnDescription);
+        }
+    }
 
     @Override
     public List<IColumnDescription> describeColumns() {
-        if (columnDescriptions == null) {
-            columnDescriptions = new ArrayList<IColumnDescription>();
-            for (BOMColumnDescription columnDescription : BOMColumnDescription.values()) {
-                columnDescriptions.add(columnDescription.clone());
-            }
-        }
         return Collections.unmodifiableList(columnDescriptions);
+    }
+
+    public BOMColumnDescription getColumn(BOMColumn column) {
+        return columnMap.get(column);
     }
 
     @Override

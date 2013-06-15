@@ -44,22 +44,31 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
     @Override
     public Object item(int index) {
         Object value = null;
-        if (index == BOMColumnDescription.ID.getIndex()) {
-            value = getPart().getId();
-        } else if (index == BOMColumnDescription.QUANTITY.getIndex()) {
-            value = getQuantity();
-        } else if (index == BOMColumnDescription.COST.getIndex()) {
-            value = getCost();
-        } else if (index == BOMColumnDescription.URL.getIndex()) {
-            value = getPart().getUrl();
-        } else if (index == BOMColumnDescription.SOURCE.getIndex()) {
-            value = getPart().getSourceUrl();
-        } else if (index == BOMColumnDescription.TITLE.getIndex()) {
-            value = getPart().getTitle();
-        } else if (index == BOMColumnDescription.VENDOR.getIndex()) {
-            value = getVendor();
-        } else if (index == BOMColumnDescription.PROJECT.getIndex()) {
-            value = getPart().getProject();
+        switch (BOMColumn.values()[index]) {
+            case ID:
+                value = getPart().getId();
+                break;
+            case QUANTITY:
+                value = getQuantity();
+                break;
+            case COST:
+                value = getCost();
+                break;
+            case URL:
+                value = getPart().getUrl();
+                break;
+            case SOURCE:
+                value = getPart().getSourceUrl();
+                break;
+            case TITLE:
+                value = getPart().getTitle();
+                break;
+            case VENDOR:
+                value = getVendor();
+                break;
+            case PROJECT:
+                value = getPart().getProject();
+                break;
         }
         return value;
     }
@@ -72,9 +81,9 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (IColumnDescription columnDescription : BOMColumnDescription.values()) {
+        for (IColumnDescription columnDescription : getRelation().describeColumns()) {
             Format format = columnDescription.getFormat();
-            Object value = item(columnDescription.getIndex());
+            Object value = item(columnDescription.getItemIndex());
             if (sb.length() > 0) {
                 sb.append(", ");
             }

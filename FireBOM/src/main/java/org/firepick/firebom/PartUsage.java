@@ -21,7 +21,9 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-public class PartUsage {
+import java.io.Serializable;
+
+public class PartUsage implements Serializable {
     private Part part;
     private double quantity;
     private String vendor;

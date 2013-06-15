@@ -57,7 +57,7 @@ public class ColumnDescription<T> implements IColumnDescription<T> {
         return this;
     }
 
-    public int getIndex() {
+    public int getItemIndex() {
         return index;
     }
 
@@ -82,5 +82,10 @@ public class ColumnDescription<T> implements IColumnDescription<T> {
     public ColumnDescription setWidth(int width) {
         format.setWidth(width);
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return getId();
     }
 }
