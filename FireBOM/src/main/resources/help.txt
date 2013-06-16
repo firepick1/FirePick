@@ -1,4 +1,5 @@
 FireBOM (C) 2013 Karl Lew http://www.firepick.org
+${firebom.version}
 =================================================
 FireBOM searches the web for parts, prices and quantities to construct
 a Build Of Materials (BOM) for you.
@@ -12,4 +13,4 @@ OPTIONS:
 -html     Print BOM as HTML table
 
 EXAMPLES:
-java -cp target/lib -jar target/Fire*.jar https://github.com/firepick1/FirePick/wiki/D7IH
+java -jar target/firebom.jar https://github.com/firepick1/FirePick/wiki/D7IH
