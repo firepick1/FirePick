@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-        <firebom.version>${build.finalName} build ${maven.build.timestamp}</firebom.version>
+        <firebom.version>${project.build.finalName} build ${maven.build.timestamp}</firebom.version>
     </properties>
 
     <dependencies>
@@ -61,6 +61,14 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/webapp</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>firebom.css</include>
+                    <include>index.html</include>
                 </includes>
             </resource>
         </resources>
@@ -131,7 +139,6 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>org.firepick.firebom.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -33,10 +33,14 @@ public class Main {
     public static void mainStream(String[] args, PrintStream printStream) throws IOException {
         BOMFactory bomFactory = new BOMFactory();
 
-        if (!parseArgs(args, bomFactory, printStream)) {
-            printHelp(printStream);
+        try {
+            if (!parseArgs(args, bomFactory, printStream)) {
+                printHelp(printStream);
+            }
         }
-        bomFactory.shutdown();
+        finally {
+            bomFactory.shutdown();
+        }
     }
 
 
@@ -49,7 +53,7 @@ public class Main {
             } else if ("-csv".equalsIgnoreCase(arg)) {
                 bomFactory.setOutputType(BOMFactory.OutputType.CSV);
             } else if ("-html".equalsIgnoreCase(arg)) {
-                bomFactory.setOutputType(BOMFactory.OutputType.HTML_TABLE);
+                bomFactory.setOutputType(BOMFactory.OutputType.HTML);
             } else {
                 try {
                     URL url = new URL(arg);

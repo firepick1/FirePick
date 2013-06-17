@@ -50,8 +50,8 @@ public class BOMHtmlPrinter extends RelationPrinter {
         BOM bom = (BOM) relation;
         printStream.println("<tr class='firebom_tr'>");
 
-        printStream.print("<td class='firebom_td'>");
-        printStream.print(" ");
+        printStream.print("<td class='firebom_td firebom_blanktotal'>");
+        printStream.print("&nbsp;");
         printStream.println("</td>");
 
 
@@ -59,20 +59,20 @@ public class BOMHtmlPrinter extends RelationPrinter {
         printStream.print(bom.getColumn(BOMColumn.COST).getFormat().format(bom.totalCost()));
         printStream.println("</td>");
 
-        printStream.print("<td class='firebom_td'>");
-        printStream.print(" ");
+        printStream.print("<td class='firebom_td firebom_blanktotal'>");
+        printStream.print("&nbsp;");
         printStream.println("</td>");
 
         printStream.print("<td class='firebom_td firebom_number firebom_total'>");
         printStream.print(bom.getColumn(BOMColumn.QUANTITY).getFormat().format(bom.partCount()));
         printStream.println("</td>");
 
-        printStream.print("<td class='firebom_td'>");
-        printStream.print(" ");
+        printStream.print("<td class='firebom_td  firebom_blanktotal'>");
+        printStream.print("&nbsp;");
         printStream.println("</td>");
 
-        printStream.print("<td class='firebom_td firebom_longtext'>");
-        printStream.print(" ");
+        printStream.print("<td class='firebom_td firebom_longtext  firebom_blanktotal'>");
+        printStream.print("&nbsp;");
         printStream.println("</td>");
 
         printStream.println("</tr>");
@@ -95,7 +95,7 @@ public class BOMHtmlPrinter extends RelationPrinter {
             printStream.println("</h3>");
         }
 
-        printStream.println("<table cellpadding=0 cellspacing=0>");
+        printStream.println("<table cellpadding=0 cellspacing=0 class='firebom_table'>");
         printStream.println("<tr class='firebom_tr'>");
         printStream.print("<th class='firebom_th'>#</th>");
         printStream.print("<th class='firebom_th'>COST</th>");

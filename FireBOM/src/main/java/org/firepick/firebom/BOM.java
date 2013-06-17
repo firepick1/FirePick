@@ -33,7 +33,7 @@ import java.util.*;
 public class BOM implements IRelation {
     private static Logger logger = LoggerFactory.getLogger(BOM.class);
 
-    public final static String UNRESOLVED = "(Unresolved)";
+    public final static String UNRESOLVED = "(Processing...)";
     private List<IColumnDescription> columnDescriptions;
     private TreeSet<IPartComparable> rows = new TreeSet<IPartComparable>();
     private int maximumParts;

@@ -84,8 +84,11 @@ public class BOMFactory implements Runnable {
             case MARKDOWN:
                 new BOMMarkdownPrinter().print(bom, printStream);
                 break;
-            case HTML_TABLE:
+            case HTML:
                 new BOMHtmlPrinter().setPrintHtmlWrapper(true).setTitle(bom.getTitle()).print(bom, printStream);
+                break;
+            case HTML_TABLE:
+                new BOMHtmlPrinter().setPrintHtmlWrapper(false).setTitle(bom.getTitle()).print(bom, printStream);
                 break;
             default:
             case CSV:
@@ -129,6 +132,7 @@ public class BOMFactory implements Runnable {
     public enum OutputType {
         DEFAULT,
         MARKDOWN,
+        HTML,
         HTML_TABLE,
         CSV
     }

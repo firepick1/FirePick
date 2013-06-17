@@ -12,5 +12,6 @@
 			<module>../openpnp/gui</module>
             <module>interfaces</module>
             <module>firepickgui</module>
+            <module>FireBOM</module>
         </modules>
 </project>

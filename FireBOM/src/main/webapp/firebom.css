@@ -1,0 +1,89 @@
+
+body {
+    font-family: Arial;
+		font-size: 10pt;
+    width: 600px;
+}
+
+h3 {
+	color: gray;
+	font-size: 14pt;
+	margin-bottom:5pt;
+	padding-bottom: 0pt;
+}
+
+.input-prompt {
+        position: absolute;
+        font-family: Times Roman;
+        text-align: center;
+        font-size: 12pt;
+        font-style: italic;
+        color: #aaa;
+        margin-top: 0px;
+        margin-left: 10px;
+}
+.firebom_table{
+}
+.firebom_copylink {
+        width: 180px;
+        margin: auto;
+        margin-top: 20px;
+}
+.firebom_input{
+    border: 1px solid gray;
+		height: 16px;
+		width: 500px;
+}
+.firebom_submit {
+	  vertical-align: bottom;
+	  background: pink;
+		height: 20px;
+}
+.firebom_processing {
+    width: 400px;
+    height: 20px;
+    margin-left: 100px;
+}
+.firebom_th {
+    font-size: 10pt;
+    border-bottom: 2px solid lightgray;
+    padding: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.firebom_td {
+    font-size: 10pt;
+    text-align: center;
+    padding: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.firebom_number {
+    text-align: right;
+}
+.firebom_longtext {
+   text-align: left;
+}
+.firebom_total {
+   text-align:right;
+   font-weight: bold;
+   border-top: 2px solid gray;
+}
+.firebom_blanktotal {
+   border-top: 2px solid lightgray;
+}
+a:link {
+    color: blue;
+    text-decoration: none;
+}
+a:visited {
+    color: purple;
+}
+a:hover {
+    color: red;
+    text-decoration: underline;
+}
+a:active {
+}
