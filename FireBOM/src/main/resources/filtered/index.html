@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<link rel="stylesheet" type="text/css" href="/firebom/firebom.css" media="screen" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" type="text/css" href="${firebom.url-prefix}firebom.css" media="screen" />
 	<title>FireBOM</title>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 	<script>
@@ -38,11 +39,12 @@
 	</script>
 </head>
 <body>
-	<form action="/firebom/rest/build">
-		<h3>Click a FireBOM</h3>
-		<input type=text id="url" name="url" title="Enter part URL" class="firebom_input" value="">
-		<input type='image' src='/firebom/firebom.jpg' title="Click Me..." class="firebom_submit" value='Submit'>
+	<form action="${firebom.url-prefix}rest/build">
+		<div class="firebom_help"><a href="https://github.com/firepick1/FirePick/wiki/FireBOM">help</a></div>
+        <input type=text id="url" name="url" title="Enter part URL" class="firebom_input" value="">
+		<input type='image' src='${firebom.url-prefix}firebom.jpg' title="Click Me..." class="firebom_submit" value='Submit'>
         <!--BOM-->
 	</form>
+    <div class="firebom_version">${firebom.version}</div>
 </body>
 </html>

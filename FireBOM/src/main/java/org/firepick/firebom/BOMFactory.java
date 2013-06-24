@@ -28,12 +28,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintStream;
 import java.net.URL;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BOMFactory implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(BOMFactory.class);
     private OutputType outputType = OutputType.DEFAULT;
-    private final ConcurrentLinkedDeque<BOM> bomQueue = new ConcurrentLinkedDeque<BOM>();
+    private final ConcurrentLinkedQueue<BOM> bomQueue = new ConcurrentLinkedQueue<BOM>();
     private Thread worker;
     private PartFactory partFactory;
     private boolean workerPaused;
@@ -73,8 +73,14 @@ public class BOMFactory implements Runnable {
                     logger.error("interrtupted", e);
                 }
             } else {
-                BOM bom = bomQueue.removeFirst();
-                bom.resolve(getPartFactory());
+                BOM bom = bomQueue.poll();
+                try {
+                    if (bom != null) {
+                        bom.resolve();
+                    }
+                } catch (Exception e) {
+                    logger.error("Could not resolve BOM", e);
+                }
             }
         }
     }

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+    <application>firebom1</application>
+    <version>1</version>
+    <threadsafe>true</threadsafe>
+    <public-root>/app-engine</public-root>
+    <static-files>
+        <exclude path="/rest/*"/>
+    </static-files>
+    <resource-files>
+        <exclude path="/rest/*"/>
+    </resource-files>
+</appengine-web-app>

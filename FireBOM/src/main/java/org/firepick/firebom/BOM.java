@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.util.*;
 
-public class BOM implements IRelation {
+public class BOM implements IRelation, IRefreshableProxy {
     private static Logger logger = LoggerFactory.getLogger(BOM.class);
 
     public final static String UNRESOLVED = "(Processing...)";
@@ -41,6 +41,7 @@ public class BOM implements IRelation {
     private URL url;
     private String title;
     private boolean isResolved;
+    private RefreshableTimer refreshableTimer = new RefreshableTimer();
 
     public BOM(URL url) {
         this.url = url;
@@ -51,16 +52,6 @@ public class BOM implements IRelation {
             columnDescriptions.add(bomColumnDescription);
             columnMap.put(column, bomColumnDescription);
         }
-    }
-
-    public synchronized BOM resolve(PartFactory partFactory) {
-        if (!isResolved) {
-            Part part = partFactory.createPart(url);
-            addPart(part, 1);
-            setResolved(true);
-            setTitle(part.getTitle());
-        }
-        return this;
     }
 
     @Override
@@ -93,9 +84,6 @@ public class BOM implements IRelation {
     protected BOMRow addPart(Part part, double quantity) {
         BOMRow bomRow = lookup(part);
         if (bomRow != null) {
-            if (bomRow.isMarked()) {
-                throw new ApplicationLimitsException("Recursive BOM detected: " + part.getUrl());
-            }
             bomRow.setQuantity(bomRow.getQuantity() + quantity);
         } else {
             if (maximumParts > 0 && rows.size() >= maximumParts) {
@@ -104,13 +92,14 @@ public class BOM implements IRelation {
             bomRow = new BOMRow(this, part);
             bomRow.setQuantity(quantity);
             rows.add(bomRow);
+            if (!part.isFresh()) {
+                part.refresh();
+            }
             logger.info("addPart({})", part.getId());
         }
-        bomRow.setMarked(true);
         for (PartUsage partUsage : part.getRequiredParts()) {
             addPart(partUsage.getPart(), partUsage.getQuantity() * quantity);
         }
-        bomRow.setMarked(false);
         return bomRow;
     }
 
@@ -146,7 +135,7 @@ public class BOM implements IRelation {
 
     public boolean isValid() {
         for (IPartComparable row : rows) {
-            if (!row.getPart().isValid()) {
+            if (!row.getPart().isFresh()) {
                 return false;
             }
         }
@@ -182,5 +171,49 @@ public class BOM implements IRelation {
     public BOM setResolved(boolean resolved) {
         isResolved = resolved;
         return this;
+    }
+
+    public synchronized BOM resolve() {
+        if (!isResolved) {
+            Part part = PartFactory.getInstance().createPart(url);
+            addPart(part, 1);
+            if (part.getRefreshException() != null) {
+                throw part.getRefreshException();
+            }
+            setResolved(true);
+            setTitle(part.getTitle());
+        }
+        return this;
+    }
+
+    @Override
+    public void refresh() {
+        for (IPartComparable row: rows) {
+            Part part = row.getPart();
+            if (!part.isFresh()) {
+                part.refresh();
+            }
+        }
+    }
+
+    @Override
+    public boolean isFresh() {
+        for (IPartComparable row: rows) {
+            Part part = row.getPart();
+            if (!part.isFresh()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void sample() {
+        refreshableTimer.sample();
+    }
+
+    @Override
+    public long getExpectedRefreshMillis() {
+        return refreshableTimer.getExpectedRefreshMillis();
     }
 }

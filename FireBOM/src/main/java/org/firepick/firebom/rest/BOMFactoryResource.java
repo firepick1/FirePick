@@ -3,21 +3,26 @@ package org.firepick.firebom.rest;
 import org.firepick.firebom.BOM;
 import org.firepick.firebom.BOMFactory;
 import org.firepick.firebom.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 
 @Path("/build")
 public class BOMFactoryResource {
+    private static Logger logger = LoggerFactory.getLogger(BOMFactoryResource.class);
+
+    @Context
+    private javax.servlet.http.HttpServletRequest request;
 
     @GET
-    @Produces("text/html")
+    @Produces("text/html; charset=UTF-8")
     public String createBOM(@QueryParam("url") String url) throws IOException, InterruptedException {
         BOMFactory bomFactory = new BOMFactory();
         BOM bom = bomFactory.create(new URL(url));
@@ -26,7 +31,13 @@ public class BOMFactoryResource {
 
         ByteArrayOutputStream bosHtml = new ByteArrayOutputStream();
         PrintStream psHtml = new PrintStream(bosHtml);
-        InputStream is = Main.class.getResourceAsStream("/index.html");
+        InputStream is;
+        logger.info("{} {}", request.getContextPath(), request.getServletPath());
+        if (request.getContextPath().contains("/firebom")) {
+            is = Main.class.getResourceAsStream("/index.html");
+        } else {
+            is = Main.class.getResourceAsStream("/app-engine/index.html");
+        }
         InputStreamReader isr = new InputStreamReader(is);
         bomFactory.setOutputType(BOMFactory.OutputType.HTML_TABLE);
         BufferedReader br = new BufferedReader(isr);

@@ -1,5 +1,10 @@
 <web-app>
-    <display-name>webpnp</display-name>
+    <display-name>firebom</display-name>
+    <init-param>
+        <!-- speed up initial Jersey loading by deactivating WADL -->
+        <param-name>com.sun.jersey.config.feature.DisableWADL</param-name>
+        <param-value>true</param-value>
+    </init-param>
     <servlet>
         <servlet-name>rest</servlet-name>
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
@@ -10,4 +15,8 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet-mapping>
+        <servlet-name>rest</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
 </web-app>

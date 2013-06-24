@@ -59,7 +59,7 @@ public class Main {
                     URL url = new URL(arg);
                     urlCount++;
                     BOM bom = new BOM(url);
-                    bom.resolve(bomFactory.getPartFactory());
+                    bom.resolve();
                     bomFactory.printBOM(printStream, bom);
                 } catch (MalformedURLException e) {
                     return false;

@@ -36,8 +36,8 @@ public class GitHubPart extends HtmlPart {
     }
 
     @Override
-    protected void parseContent(String content) throws IOException {
-        super.parseContent(content);
+    protected void refreshFromRemoteContent(String content) throws IOException {
+        super.refreshFromRemoteContent(content);
         String id = PartFactory.getInstance().scrapeText(content, startId, endId);
         setId(id);
         String title = PartFactory.getInstance().scrapeText(content, startTitle, endTitle);

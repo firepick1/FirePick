@@ -35,8 +35,8 @@ public class PartTester {
     public PartTester(PartFactory partFactory, String url) throws IOException {
         this.url = new URL(url);
         part = partFactory.createPart(this.url);
-        part.validate();
-        assert(part.isValid());
+        part.refresh();
+        assert(part.isFresh());
     }
 
     public PartTester testId(String id) {
@@ -45,17 +45,17 @@ public class PartTester {
     }
 
     public PartTester testUnitCost(double value) {
-        assertEquals(value, part.getUnitCost(), 0);
+        assertEquals(value, part.getUnitCost(), .005d);
         return this;
     }
 
     public PartTester testPackageCost(double value) {
-        assertEquals(value, part.getPackageCost(), 0);
+        assertEquals(value, part.getPackageCost(), .005d);
         return this;
     }
 
     public PartTester testPackageUnits(double value) {
-        assertEquals(value, part.getPackageUnits(), 0);
+        assertEquals(value, part.getPackageUnits(), 0.005d);
         return this;
     }
 

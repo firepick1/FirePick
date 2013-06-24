@@ -38,7 +38,7 @@ public class McMasterCarrPart extends Part {
     }
 
     @Override
-    protected void update() throws IOException {
+    protected void refreshFromRemote() throws IOException {
         String partNum = getUrl().toString().replace("http://www.mcmaster.com/#", "");
         String queryUrl = queryUrlTemplate.replaceAll("\\{PART\\}", partNum);
         String content = PartFactory.getInstance().urlTextContent(new URL(queryUrl));
@@ -48,7 +48,11 @@ public class McMasterCarrPart extends Part {
         }
         String packageUnits = PartFactory.getInstance().scrapeText(content, startPackageUnits, endPackageUnits);
         if (packageUnits != null) {
-            setPackageUnits(Double.parseDouble(packageUnits));
+            double value = Double.parseDouble(packageUnits);
+            if (value == 0) {
+                value = 1;
+            }
+            setPackageUnits(value);
         }
         setId(partNum);
     }

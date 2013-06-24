@@ -37,7 +37,7 @@ public class ShapewaysPart extends Part  {
     }
 
     @Override
-    protected void parseContent(String content) throws IOException {
+    protected void refreshFromRemoteContent(String content) throws IOException {
         String price = PartFactory.getInstance().scrapeText(content, startPrice, endPrice);
         if (price != null) {
             setPackageCost(Double.parseDouble(price));

@@ -29,7 +29,6 @@ import java.text.Format;
 
 public class BOMRow extends PartUsage implements IRow, IPartComparable {
     private BOM bom;
-    private boolean marked;
 
     public BOMRow(BOM bom, Part part) {
         this.bom = bom;
@@ -94,14 +93,5 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
             }
         }
         return sb.toString();
-    }
-
-    public boolean isMarked() {
-        return marked;
-    }
-
-    public BOMRow setMarked(boolean marked) {
-        this.marked = marked;
-        return this;
     }
 }

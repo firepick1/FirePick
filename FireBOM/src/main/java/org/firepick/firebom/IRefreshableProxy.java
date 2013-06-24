@@ -21,50 +21,32 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import java.io.Serializable;
+public interface IRefreshableProxy {
 
-public class PartUsage implements Serializable {
-    private Part part;
-    private double quantity;
-    private String vendor;
+    /**
+     * Synchronize proxy with remote resource
+     */
+    void refresh();
 
-    public Part getPart() {
-        return part;
-    }
+    /**
+     * A newly constructed proxy is not fresh until it is refreshed.
+     * Freshness lasts until a refresh timeout. Unsampled proxies stay fresh
+     * forever.
+     * @return true if proxy has been recently refreshed or never sampled
+     */
+    boolean isFresh();
 
-    public PartUsage setPart(Part part) {
-        this.part = part;
-        return this;
-    }
+    /**
+     * Use the information provided by the proxy. Frequently sampled proxies should be
+     * refreshed more often than rarely sampled proxies. Sampling a proxy affects its
+     * freshness as well as the refresh interval.
+     */
+    void sample();
 
-    public double getQuantity() {
-        return quantity;
-    }
-
-    public PartUsage setQuantity(double quantity) {
-        this.quantity = quantity;
-        return this;
-    }
-
-    public double getCost() {
-        return quantity * part.getUnitCost();
-    }
-
-    public String getVendor() {
-        if (vendor == null) {
-            return getPart().getVendor();
-        }
-        return vendor;
-    }
-
-    public PartUsage setVendor(String vendor) {
-        this.vendor = vendor;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return part.toString();
-    }
-
+    /**
+     * The expected refresh interval can be adaptive--if a resource is sampled frequently,
+     * it needs to be refreshed frequently. Rarely sampled resources should be sampled less frequently.
+     * @return expected refresh interval in milliseconds
+     */
+    long getExpectedRefreshMillis();
 }

@@ -22,6 +22,17 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.google.appengine</groupId>
+            <artifactId>appengine-api-1.0-sdk</artifactId>
+            <version>1.8.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.10</version>
@@ -51,7 +62,7 @@
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
         </dependency>
     </dependencies>
     <build>
@@ -64,15 +75,19 @@
                 </includes>
             </resource>
             <resource>
-                <directory>src/main/webapp</directory>
+                <directory>src/main/resources/webapp</directory>
                 <filtering>true</filtering>
                 <includes>
                     <include>firebom.css</include>
-                    <include>index.html</include>
                 </includes>
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>appengine-maven-plugin</artifactId>
+                <version>1.8.1</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -103,6 +118,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
+                <configuration>
+                    <!-- Joyent does not support 1.7 as of 2013.7.20 -->
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -121,6 +141,97 @@
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>Google App Engine resources</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <filters>
+                                <filter>src/main/resources/filtered/filter-app-engine.properties</filter>
+                            </filters>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/filtered</directory>
+                                    <filtering>true</filtering>
+                                    <targetPath>${project.build.finalName}/app-engine</targetPath>
+                                    <includes>
+                                        <include>*.html</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/filtered</directory>
+                                    <filtering>true</filtering>
+                                    <targetPath>${project.build.outputDirectory}/app-engine</targetPath>
+                                    <includes>
+                                        <include>*.html</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/webapp</directory>
+                                    <filtering>false</filtering>
+                                    <targetPath>${project.build.finalName}/app-engine</targetPath>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>standard war resources</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <filters>
+                                <filter>src/main/resources/filtered/filter-war.properties</filter>
+                            </filters>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/filtered</directory>
+                                    <filtering>true</filtering>
+                                    <targetPath>${project.build.finalName}</targetPath>
+                                    <includes>
+                                        <include>*.html</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/filtered</directory>
+                                    <filtering>true</filtering>
+                                    <targetPath>${project.build.outputDirectory}</targetPath>
+                                    <includes>
+                                        <include>*.html</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/webapp</directory>
+                                    <filtering>false</filtering>
+                                    <targetPath>${project.build.finalName}</targetPath>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>resources - resources</id>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

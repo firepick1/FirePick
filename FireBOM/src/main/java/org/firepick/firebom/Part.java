@@ -31,31 +31,33 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
-public abstract class Part implements IPartComparable, Serializable {
+public abstract class Part implements IPartComparable, Serializable, IRefreshableProxy {
     private static Logger logger = LoggerFactory.getLogger(Part.class);
     private static Pattern startLink = Pattern.compile("<a\\s+href=\"");
     private static Pattern endLink = Pattern.compile("\"");
     protected List<String> sourceList;
     protected List<PartUsage> requiredParts;
+    private Part sourcePart;
     private String id;
     private String title;
     private String vendor;
     private String project;
     private URL url;
-    private double packageCost;
-    private double packageUnits;
-    private long lastValidationMillis;
-    private boolean isValid;
-    private int validating;
-    private Date validationDate;
+    private Double packageCost;
+    private Double packageUnits;
+    private RefreshableTimer refreshableTimer;
+    private boolean refreshInProgress;
+    private RuntimeException refreshException;
+    private Lock refreshLock = new ReentrantLock();
 
     public Part(PartFactory partFactory) {
-        setPackageUnits(1);
-        requiredParts = new ArrayList<PartUsage>();
+        this.requiredParts = new ArrayList<PartUsage>();
+        this.refreshableTimer = new RefreshableTimer();
     }
 
     public Part(PartFactory partFactory, URL url) {
@@ -63,12 +65,17 @@ public abstract class Part implements IPartComparable, Serializable {
         setUrl(url);
     }
 
-    public String getId() {
-        validate();
+    public synchronized String getId() {
+        sample();
+        if (id == null) {
+            if (sourcePart != null) {
+                return sourcePart.getId();
+            }
+        }
         return id;
     }
 
-    public Part setId(String id) {
+    public synchronized Part setId(String id) {
         this.id = id;
         return this;
     }
@@ -77,98 +84,77 @@ public abstract class Part implements IPartComparable, Serializable {
         return url;
     }
 
-    public Part setUrl(URL url) {
+    public synchronized Part setUrl(URL url) {
         this.url = url;
         return this;
     }
 
-    public URL getSourceUrl() {
-        return url;
+    public synchronized URL getSourceUrl() {
+        if (sourcePart == null) {
+            return url;
+        }
+        return sourcePart.getUrl();
     }
 
-    public double getPackageCost() {
-        validate();
-        return packageCost;
+    public synchronized double getPackageCost() {
+        sample();
+        double cost = 0;
+
+        if (packageCost == null) {
+            if (sourcePart != null) {
+                cost = sourcePart.getUnitCost(); // for abstract parts, the package cost is the unit cost
+                logger.debug("packagetCost {} += {}", id, cost);
+            }
+            for (PartUsage partUsage : requiredParts) {
+                double partCost = partUsage.getQuantity() * partUsage.getPart().getUnitCost();
+                logger.debug("packagetCost {} += {} {}", new Object[]{id, partUsage.getPart().getId(), partCost});
+                cost += partCost;
+            }
+        } else {
+            cost = packageCost;
+        }
+
+        return cost;
     }
 
-    public Part setPackageCost(double packageCost) {
+    public synchronized Part setPackageCost(Double packageCost) {
         this.packageCost = packageCost;
         return this;
     }
 
-    public double getPackageUnits() {
-        validate();
-        return packageUnits;
+    public synchronized double getPackageUnits() {
+        sample();
+        double units = 1;
+        if (packageUnits == null) {
+            if (sourcePart != null) {
+                units = 1; // this part is abstract, so package units is always 1
+            }
+        } else {
+            units = packageUnits;
+        }
+        return units;
     }
 
-    public Part setPackageUnits(double packageUnits) {
-        this.packageUnits = Math.max(1, packageUnits);
+    public synchronized Part setPackageUnits(Double packageUnits) {
+        if (packageUnits != null && packageUnits <= 0) {
+            throw new IllegalArgumentException("package units cannot be zero or negative: " + packageUnits);
+        }
+        this.packageUnits = packageUnits;
         return this;
     }
 
-    public double getUnitCost() {
-        validate();
+    public synchronized double getUnitCost() {
+        sample();
         return getPackageCost() / getPackageUnits();
-    }
-
-    public synchronized void validate() {
-        if (validating == 0 && !isValid) {
-            validating++;
-            long elapsedMillis = System.currentTimeMillis() - lastValidationMillis;
-            if (elapsedMillis > PartFactory.getInstance().getValidationMillis()) {
-                try {
-                    clear();
-                    update();
-                    setValid(true);
-                    logger.info("{} {} {}x{} {}", new Object[]{getId(), getTitle(), getPackageCost(), getPackageUnits(), getUrl()});
-                }
-                catch (Throwable e) {
-                    logger.warn("Could not validate part {}", getUrl(), e);
-                }
-                finally {
-                    lastValidationMillis = System.currentTimeMillis();
-                }
-            }
-            validating--;
-        }
-    }
-
-    protected void update() throws IOException {
-        String content = PartFactory.getInstance().urlTextContent(getUrl());
-        parseContent(content);
     }
 
     private void clear() {
         setId(null);
         setTitle(null);
         setVendor(null);
-        setPackageCost(0);
-        setPackageUnits(1);
+        setPackageCost(null);
+        setPackageUnits(null);
         // do not clear URL;
-    }
-
-    protected void parseContent(String content) throws IOException {
-        throw new NotImplementedException();
-    }
-
-    public boolean isValid() {
-        return isValid;
-    }
-
-    public void setValid(boolean valid) {
-        if (valid) {
-            validationDate = new Date();
-        }
-        isValid = valid;
-    }
-
-    public int secondsSinceValidation() {
-        if (getValidationDate() == null) {
-            return Integer.MAX_VALUE;
-        }
-        Date now = new Date();
-        long seconds = (now.getTime() - getValidationDate().getTime()) / 1000;
-        return (int) seconds;
     }
 
     protected List<String> parseListItemStrings(String ul) throws IOException {
@@ -198,12 +184,19 @@ public abstract class Part implements IPartComparable, Serializable {
         return result;
     }
 
-    public String getTitle() {
-        validate();
-        return title == null ? getId() : title;
+    public synchronized String getTitle() {
+        sample();
+        if (title == null) {
+            if (sourcePart == null) {
+                return getId();
+            } else {
+                return sourcePart.getTitle();
+            }
+        }
+        return title;
     }
 
-    public Part setTitle(String title) {
+    public synchronized Part setTitle(String title) {
         this.title = title;
         return this;
     }
@@ -236,34 +229,114 @@ public abstract class Part implements IPartComparable, Serializable {
         return cmp;
     }
 
-    public String getVendor() {
-        validate();
+    public synchronized String getVendor() {
+        sample();
         if (vendor == null) {
-            return getUrl().getHost();
+            if (sourcePart == null) {
+                return getUrl().getHost();
+            } else {
+                return sourcePart.getVendor();
+            }
         }
         return vendor;
     }
 
-    public Part setVendor(String vendor) {
+    public synchronized Part setVendor(String vendor) {
         this.vendor = vendor;
         return this;
     }
 
-    public List<PartUsage> getRequiredParts() {
-        validate();
+    public synchronized List<PartUsage> getRequiredParts() {
+        sample();
         return Collections.unmodifiableList(requiredParts);
     }
 
-    public String getProject() {
+    public synchronized String getProject() {
         return project == null ? getVendor() : project;
     }
 
-    public Part setProject(String project) {
+    public synchronized Part setProject(String project) {
         this.project = project;
         return this;
     }
 
-    public Date getValidationDate() {
-        return validationDate;
+    protected RefreshableTimer getRefreshableTimer() {
+        return refreshableTimer;
+    }
+
+    @Override
+    public final void refresh() {
+        if (refreshException != null) {
+            throw refreshException;
+        }
+        synchronized (refreshLock) {
+            if (refreshInProgress) {
+                setRefreshException(new ApplicationLimitsException("Recursive part reference detected: " + url));
+                throw getRefreshException();
+            }
+            try {
+                refreshInProgress = true;
+                clear();
+                refreshFromRemote();
+                logger.info("{} {} {}x{} {}", new Object[]{id, packageCost, packageUnits, title, url});
+                refreshableTimer.refresh();
+            }
+            catch (ApplicationLimitsException e) {
+                setRefreshException(e);
+                throw e;
+            }
+            catch (Throwable e) {
+                logger.warn("Could not refresh part {}", getUrl(), e);
+            }
+            finally {
+                refreshInProgress = false;
+            }
+        }
+    }
+
+    protected void refreshFromRemote() throws Exception {
+        String content = PartFactory.getInstance().urlTextContent(getUrl());
+        refreshFromRemoteContent(content);
+    }
+
+    protected void refreshFromRemoteContent(String content) throws Exception {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public synchronized boolean isFresh() {
+        return refreshableTimer.isFresh();
+    }
+
+    @Override
+    public synchronized void sample() {
+        refreshableTimer.sample();
+    }
+
+    @Override
+    public synchronized long getExpectedRefreshMillis() {
+        return refreshableTimer.getExpectedRefreshMillis();
+    }
+
+    @Override
+    public String toString() {
+        return getId() + " " + getUrl().toString();
+    }
+
+    public synchronized Part getSourcePart() {
+        return sourcePart;
+    }
+
+    public synchronized Part setSourcePart(Part sourcePart) {
+        this.sourcePart = sourcePart;
+        return this;
+    }
+
+    public RuntimeException getRefreshException() {
+        return refreshException;
+    }
+
+    public void setRefreshException(RuntimeException refreshException) {
+        this.refreshException = refreshException;
     }
 }

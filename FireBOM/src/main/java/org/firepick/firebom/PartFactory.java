@@ -24,25 +24,33 @@ package org.firepick.firebom;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ListIterator;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Locale.US;
 
-public class PartFactory {
+public class PartFactory implements Iterable<Part>, Runnable {
+    private static Logger logger = LoggerFactory.getLogger(PartFactory.class);
+    private static Thread worker;
+    private static ConcurrentLinkedQueue<Part> refreshQueue = new ConcurrentLinkedQueue<Part>();
     private static PartFactory partFactory;
     private String accept;
     private String language;
     private String userAgent;
     private long validationMillis;
     private long urlRequests;
+    private long networkRequests;
 
     protected PartFactory() {
         this(Locale.getDefault());
@@ -66,21 +74,43 @@ public class PartFactory {
 
     public String urlTextContent(URL url) throws IOException {
         urlRequests++;
-        URLConnection connection = url.openConnection();
-        connection.setRequestProperty("Accept", accept);
-        connection.setRequestProperty("Accept-Language", language);
-        connection.setRequestProperty("User-Agent", userAgent);
-        InputStreamReader isr = new InputStreamReader(connection.getInputStream());
-        BufferedReader br = new BufferedReader(isr);
-        StringBuilder response = new StringBuilder();
-        String inputLine;
+        Element cacheElement = getCache("URL-contents").get(url);
+        if (cacheElement == null) {
+            StringBuilder response = null;
+            try {
+                networkRequests++;
+                URLConnection connection = url.openConnection();
+                connection.setRequestProperty("Accept", accept);
+                connection.setRequestProperty("Accept-Language", language);
+                connection.setRequestProperty("User-Agent", userAgent);
+                InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+                BufferedReader br = new BufferedReader(isr);
+                response = new StringBuilder();
+                String inputLine;
 
-        while ((inputLine = br.readLine()) != null) {
-            response.append(inputLine);
+                while ((inputLine = br.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                br.close();
+            }
+            catch (IOException e) {
+                cacheElement = new Element(url, e);
+                getCache("URL-contents").put(cacheElement);
+                throw e;
+            }
+            String content = response.toString();
+            cacheElement = new Element(url, content);
+            getCache("URL-contents").put(cacheElement);
+            return content;
+        } else {
+            if (cacheElement.getObjectValue() instanceof IOException) {
+                logger.info("throwing cached exception for {}", url);
+                throw (IOException) cacheElement.getObjectValue();
+            } else {
+                logger.info("returning cached contents for {}", url);
+                return cacheElement.getObjectValue().toString();
+            }
         }
-        br.close();
-
-        return response.toString();
     }
 
     public String scrapeText(String value, Pattern start, Pattern end) {
@@ -101,25 +131,31 @@ public class PartFactory {
         return result;
     }
 
-    private Ehcache getCache() {
-        return CacheManager.getInstance().addCacheIfAbsent("FireBOM");
+    private Ehcache getCache(String name) {
+        return CacheManager.getInstance().addCacheIfAbsent(name);
     }
 
     public Part createPart(URL url) {
-        Element cacheElement = getCache().get(url);
+        Element cacheElement = getCache("org.firepick.firebom.Part").get(url);
+        Part part = null;
         if (cacheElement != null) {
-            return (Part) cacheElement.getObjectValue();
+            part = (Part) cacheElement.getObjectValue();
+        } else {
+            String host = url.getHost();
+            part = createPartForHost(url, host);
+
+            cacheElement = new Element(url, part);
+            getCache("org.firepick.firebom.Part").put(cacheElement);
+            refreshQueue.add(part);
+            if (worker == null) {
+                worker = new Thread(this);
+                worker.start();
+            }
         }
-        String host = url.getHost();
-        Part part = createPartForHost(url, host);
-
-        cacheElement = new Element(url, part);
-        getCache().put(cacheElement);
-
         return part;
     }
 
-    private Part createPartForHost(URL url, String host)  {
+    private Part createPartForHost(URL url, String host) {
         Part part;
         if ("www.shapeways.com".equalsIgnoreCase(host)) {
             part = new ShapewaysPart(this, url);
@@ -149,5 +185,88 @@ public class PartFactory {
 
     public long getUrlRequests() {
         return urlRequests;
+    }
+
+    @Override
+    public ListIterator<Part> iterator() {
+        Ehcache cache = getCache("org.firepick.firebom.Part");
+        return new CacheIterator(cache);
+    }
+
+    @Override
+    public void run() {
+        while (refreshQueue.size() > 0) {
+            Part part = refreshQueue.poll();
+            if (part != null && !part.isFresh()) {
+                try {
+                    part.refresh();
+                }
+                catch (ApplicationLimitsException e) {
+                    logger.error("Bad part", e);
+                }
+                catch (Exception e) {
+
+                }
+            }
+        }
+    }
+
+    public long getNetworkRequests() {
+        return networkRequests;
+    }
+
+    public class CacheIterator implements ListIterator<Part> {
+        ListIterator<URL> listIterator;
+        Ehcache ehcache;
+
+        public CacheIterator(Ehcache ehcache) {
+            this.listIterator = ehcache.getKeys().listIterator();
+            this.ehcache = ehcache;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return listIterator.hasNext();
+        }
+
+        @Override
+        public Part next() {
+            return (Part) ehcache.get(listIterator.next()).getObjectValue();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return listIterator.hasPrevious();
+        }
+
+        @Override
+        public Part previous() {
+            return (Part) ehcache.get(listIterator.previous()).getObjectValue();
+        }
+
+        @Override
+        public int nextIndex() {
+            return listIterator.nextIndex();
+        }
+
+        @Override
+        public int previousIndex() {
+            return listIterator.previousIndex();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(Part part) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(Part part) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

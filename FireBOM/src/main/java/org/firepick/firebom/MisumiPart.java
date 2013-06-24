@@ -42,7 +42,7 @@ public class MisumiPart extends Part {
     }
     
     @Override
-    protected void parseContent(String content) throws IOException {
+    protected void refreshFromRemoteContent(String content) throws IOException {
         String item = PartFactory.getInstance().scrapeText(content, startItem, endItem);
         item = item.substring(item.length()-11);
         String id = PartFactory.getInstance().scrapeText(getUrl().toString(), startId, endId);

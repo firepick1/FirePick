@@ -22,10 +22,15 @@ package org.firepick.firebom;
  */
 
 
-import org.junit.AfterClass;
-import org.junit.Before;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.config.CacheConfiguration;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.net.URL;
+
+import static org.junit.Assert.assertEquals;
 
 public class PartFactoryTest {
     private static PartFactory partFactory;
@@ -62,13 +67,33 @@ public class PartFactoryTest {
     }
 
     @Test
+    public void testCacheExpiration() throws Exception {
+        Ehcache cache = CacheManager.getInstance().getEhcache("org.firepick.firebom.Part");
+        CacheConfiguration configuration = cache.getCacheConfiguration();
+        long idleTime = configuration.getTimeToIdleSeconds();
+        long liveTime = configuration.getTimeToLiveSeconds();
+        configuration.setTimeToIdleSeconds(1);
+        configuration.setTimeToLiveSeconds(1);
+        URL url = new URL("http://www.mcmaster.com/#91290A115");
+        Part part1 = PartFactory.getInstance().createPart(url);
+        Part part2 = PartFactory.getInstance().createPart(url);
+        assertEquals(part1, part2);
+
+        Thread.sleep(2000);
+
+        Part part3 = PartFactory.getInstance().createPart(url);
+        assert(part1 != part3);
+        configuration.setTimeToIdleSeconds(idleTime);
+        configuration.setTimeToLiveSeconds(liveTime);
+    }
+
+    @Test
     public void testGitHub() throws Exception {
-        new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/X523")
-                .testId("X523").testPackageCost(.63).testPackageUnits(1).testUnitCost(.63).testRequiredParts(0).testProject("FirePick");
-        Part part = new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH")
-                .testId("D7IH").testUnitCost(11.6698).testPackageCost(11.6698).testPackageUnits(1)
-                .testRequiredParts(5)
-                .testRequiredPart(0, "DB16", 1, 1.50)
+        PartTester tester = new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH");
+        tester.testId("D7IH");
+        tester.testRequiredParts(5);
+        tester.testUnitCost(11.6698).testPackageCost(11.6698).testPackageUnits(1);
+        tester.testRequiredPart(0, "DB16", 1, 1.50)
                 .testRequiredPart(1, "F525", 1, 0.11)
                 .testRequiredPart(2, "F510", 1, 0.0793)
                 .testRequiredPart(3, "F50N", 1, 0.0173)
@@ -76,6 +101,8 @@ public class PartFactoryTest {
                 .testProject("FirePick")
                 .getPart()
         ;
+        new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/X523")
+                .testId("X523").testPackageCost(.63).testPackageUnits(1).testUnitCost(.63).testRequiredParts(0).testProject("FirePick");
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/F3WF")
                 .testId("F3WF").testUnitCost(0.0227).testPackageCost(0.0227).testPackageUnits(1);
     }

@@ -21,6 +21,7 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import net.sf.ehcache.CacheManager;
 import org.firepick.relation.RelationPrinter;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,7 @@ public class BOMTest {
     @Before
     public void setup() {
         partFactory = PartFactory.getInstance();
+  //      CacheManager.getInstance().clearAll();
     }
 
     @Test
@@ -57,10 +59,10 @@ public class BOMTest {
         assertEquals(0, part.getPackageCost(), 0);
         assertEquals(1, part.getPackageUnits(), 0);
         assertEquals("www.shapeways.com", part.getVendor());
-        assertFalse(part.isValid());
+        assertFalse(part.isFresh());
 
         BOM bom = new BOM(url);
-        bom.resolve(partFactory);
+        bom.resolve();
         assertFalse(bom.isValid());
         new RelationPrinter().print(bom, System.out);
     }
@@ -70,10 +72,10 @@ public class BOMTest {
         URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
         BOM bom = new BOM(url);
         assertEquals(0, bom.getRowCount());
-        bom.resolve(partFactory);
+        bom.resolve();
         assertEquals(6, bom.getRowCount());
         new RelationPrinter().print(bom, System.out);
-        assertEquals("Total cost: ", 13.5696, bom.totalCost(), 0);
+        assertEquals("Total cost: ", 13.5696, bom.totalCost(), 0.005d);
         assertEquals("Part count:", 6, bom.partCount());
     }
 
@@ -82,7 +84,7 @@ public class BOMTest {
         URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
         BOM bom = new BOM(url);
         assertEquals(0, bom.getRowCount());
-        bom.resolve(partFactory);
+        bom.resolve();
         assertEquals(6, bom.getRowCount());
         assertEquals(6, bom.getRowCount());
         new BOMMarkdownPrinter().print(bom, System.out);
@@ -116,14 +118,14 @@ public class BOMTest {
         BOM bom = new BOM(url1);
         Exception caughtException = null;
         try {
-            bom.resolve(partFactory);
+            bom.resolve();
         }
         catch (Exception e) {
             caughtException = e;
         }
         assert (caughtException instanceof ApplicationLimitsException);
-        assertEquals(2, bom.getRowCount());
-        assert (caughtException.getMessage().contains("Recursive BOM"));
+        assertEquals(1, bom.getRowCount());
+        assert (caughtException.getMessage().contains("Recursive"));
         new RelationPrinter().print(bom, System.out);
     }
 
@@ -151,7 +153,7 @@ public class BOMTest {
         bomFactory.printBOM(System.out, bom);
 
         // everything should be cached with no additional URL requests
-        long requests = partFactory.getUrlRequests();
+        long requests = partFactory.getNetworkRequests();
         bomFactory.setWorkerPaused(true);
         bom = bomFactory.create(url);
         assert (bomFactory.isWorkerPaused());
@@ -164,6 +166,6 @@ public class BOMTest {
         assert (bom.isResolved());
         assertEquals("Adjustable idler, 6-7mm belt, horizontal extrusions", bom.getTitle());
         bomFactory.printBOM(System.out, bom);
-        assertEquals(requests, partFactory.getUrlRequests());
+        assertEquals(requests, partFactory.getNetworkRequests());
     }
 }

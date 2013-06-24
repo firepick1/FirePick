@@ -6,12 +6,24 @@ body {
 }
 
 h3 {
-	color: gray;
 	font-size: 14pt;
 	margin-bottom:5pt;
 	padding-bottom: 0pt;
 }
 
+.firebom_help {
+        font-size: 10pt;
+        font-family: Times Roman;
+        font-style: italic
+}
+
+.firebom_version {
+        color: lightgray;
+        font-size: 8pt;
+        font-family: Arial;
+        margin-left:auto;
+        margin-right:auto;
+}
 .input-prompt {
         position: absolute;
         font-family: Times Roman;
@@ -23,6 +35,7 @@ h3 {
         margin-left: 10px;
 }
 .firebom_table{
+        margin-top: 20px;
 }
 .firebom_copylink {
         width: 180px;
@@ -43,6 +56,12 @@ h3 {
     width: 400px;
     height: 20px;
     margin-left: 100px;
+}
+.firebom_stale {
+    background: #fdd;
+}
+.firebom_fresh {
+    background: #dfd;
 }
 .firebom_th {
     font-size: 10pt;

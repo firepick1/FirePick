@@ -34,9 +34,8 @@ public class HtmlPart extends Part {
     }
 
     @Override
-    protected void parseContent(String content) throws IOException {
+    protected void refreshFromRemoteContent(String content) throws IOException {
         String[] ulParts = content.split("</ul>");
-        double cost = 0;
         for (String ulPart : ulParts) {
             if (ulPart.contains("@Sources")) {
                 sourceList = parseListItemStrings(ulPart);
@@ -45,8 +44,8 @@ public class HtmlPart extends Part {
                 }
                 sourceUrl = parseLink(sourceList.get(0));
                 Part sourcePart = PartFactory.getInstance().createPart(sourceUrl);
-                setVendor(sourcePart.getVendor());
-                cost += sourcePart.getUnitCost();
+                sourcePart.refresh();
+                setSourcePart(sourcePart);
             } else if (ulPart.contains("@Require")) {
                 List<String> requiredItems = parseListItemStrings(ulPart);
                 requiredParts.clear();
@@ -54,18 +53,14 @@ public class HtmlPart extends Part {
                     URL link = parseLink(required);
                     double quantity = parseQuantity(required, 1);
                     Part part = PartFactory.getInstance().createPart(link);
+                    part.refresh();
                     PartUsage partUsage = new PartUsage().setPart(part).setQuantity(quantity);
                     requiredParts.add(partUsage);
-                    cost += quantity * part.getUnitCost();
                 }
             }
         }
-        setPackageCost(cost);
     }
 
-    public URL getSourceUrl() {
-        return sourceUrl == null ? super.getSourceUrl() : sourceUrl;
-    }
 
 }
 
