@@ -24,15 +24,40 @@ package org.firepick.firebom;
 import org.firepick.relation.IColumnDescription;
 import org.firepick.relation.IRelation;
 import org.firepick.relation.IRow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.Format;
 
 public class BOMRow extends PartUsage implements IRow, IPartComparable {
+    private static Logger logger = LoggerFactory.getLogger(BOMRow.class);
+
     private BOM bom;
+    private boolean isResolved;
 
     public BOMRow(BOM bom, Part part) {
         this.bom = bom;
         setPart(part);
+    }
+
+    public boolean resolve() {
+        if (!isResolved) {
+            Part part = getPart();
+            if (!part.isResolved()) {
+                try {
+                    part.refresh();
+                } catch (ProxyResolutionException e) {
+                    logger.warn(part.getUrl().toString(), e);
+                }
+            }
+            if (part.isResolved()) {
+                for (PartUsage partUsage : part.getRequiredParts()) {
+                    bom.addPart(partUsage.getPart(), partUsage.getQuantity() * getQuantity());
+                }
+                isResolved = true;
+            }
+        }
+        return isResolved;
     }
 
     @Override
@@ -93,5 +118,9 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
             }
         }
         return sb.toString();
+    }
+
+    public boolean isResolved() {
+        return isResolved;
     }
 }

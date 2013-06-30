@@ -23,10 +23,10 @@ package org.firepick.firebom;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HtmlPart extends Part {
-    private URL sourceUrl;
 
     public HtmlPart(PartFactory partFactory, URL url) {
         super(partFactory, url);
@@ -36,28 +36,39 @@ public class HtmlPart extends Part {
     @Override
     protected void refreshFromRemoteContent(String content) throws IOException {
         String[] ulParts = content.split("</ul>");
+        List<String> newSourceList = null;
+        Part newSourcePart = null;
+        List<PartUsage> newRequiredParts = null;
+
         for (String ulPart : ulParts) {
             if (ulPart.contains("@Sources")) {
-                sourceList = parseListItemStrings(ulPart);
-                if (sourceList.size() == 0) {
+                newSourceList = parseListItemStrings(ulPart);
+                if (newSourceList.size() == 0) {
                     throw new RuntimeException("GitHub page has no @Sources tag");
                 }
-                sourceUrl = parseLink(sourceList.get(0));
-                Part sourcePart = PartFactory.getInstance().createPart(sourceUrl);
-                sourcePart.refresh();
-                setSourcePart(sourcePart);
+                URL sourceUrl = parseLink(newSourceList.get(0));
+                newSourcePart = PartFactory.getInstance().createPart(sourceUrl);
+                newSourcePart.refresh();
             } else if (ulPart.contains("@Require")) {
                 List<String> requiredItems = parseListItemStrings(ulPart);
-                requiredParts.clear();
+                newRequiredParts = new ArrayList<PartUsage>();
                 for (String required : requiredItems) {
                     URL link = parseLink(required);
                     double quantity = parseQuantity(required, 1);
                     Part part = PartFactory.getInstance().createPart(link);
                     part.refresh();
                     PartUsage partUsage = new PartUsage().setPart(part).setQuantity(quantity);
-                    requiredParts.add(partUsage);
+                    newRequiredParts.add(partUsage);
                 }
             }
+        }
+
+        if (newRequiredParts != null) {
+            requiredParts = newRequiredParts;
+        }
+        if (newSourcePart != null) {
+            sourceList = newSourceList;
+            setSourcePart(newSourcePart);
         }
     }
 

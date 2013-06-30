@@ -25,9 +25,7 @@ public class BOMFactoryResource {
     @Produces("text/html; charset=UTF-8")
     public String createBOM(@QueryParam("url") String url) throws IOException, InterruptedException {
         BOMFactory bomFactory = new BOMFactory();
-        BOM bom = bomFactory.create(new URL(url));
-
-        Thread.sleep(1000); // let worker thread have a chance of succeeding...
+        BOM bom = bomFactory.createBOM(new URL(url));
 
         ByteArrayOutputStream bosHtml = new ByteArrayOutputStream();
         PrintStream psHtml = new PrintStream(bosHtml);
@@ -54,8 +52,7 @@ public class BOMFactoryResource {
                     psHtml.print("</div>");
                     psHtml.println();
                 } else {
-                    psHtml.println("<img src='/firebom/processing.gif' height='20px'>");
-                    psHtml.println("<script>setTimeout(function() {location.reload();}, 4400)</script>");
+                    psHtml.println("<script>setTimeout(function() {location.reload();}, 1000)</script>");
                 }
             } else {
                 psHtml.println(line);

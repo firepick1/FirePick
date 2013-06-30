@@ -32,8 +32,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ListIterator;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,6 +71,14 @@ public class PartFactory implements Iterable<Part>, Runnable {
         return partFactory;
     }
 
+    public List<Part> getRefreshQueue() {
+        List<Part> list = new ArrayList<Part>();
+        for (Part part: refreshQueue) {
+            list.add(part);
+        }
+        return Collections.unmodifiableList(list);
+    }
+
     public String urlTextContent(URL url) throws IOException {
         urlRequests++;
         Element cacheElement = getCache("URL-contents").get(url);
@@ -93,10 +100,10 @@ public class PartFactory implements Iterable<Part>, Runnable {
                 }
                 br.close();
             }
-            catch (IOException e) {
+            catch (Exception e) {
                 cacheElement = new Element(url, e);
                 getCache("URL-contents").put(cacheElement);
-                throw e;
+                throw new ProxyResolutionException(url.toString(), e);
             }
             String content = response.toString();
             cacheElement = new Element(url, content);
@@ -138,19 +145,23 @@ public class PartFactory implements Iterable<Part>, Runnable {
     public Part createPart(URL url) {
         Element cacheElement = getCache("org.firepick.firebom.Part").get(url);
         Part part = null;
-        if (cacheElement != null) {
-            part = (Part) cacheElement.getObjectValue();
-        } else {
+        if (cacheElement == null) {
             String host = url.getHost();
             part = createPartForHost(url, host);
 
             cacheElement = new Element(url, part);
             getCache("org.firepick.firebom.Part").put(cacheElement);
             refreshQueue.add(part);
-            if (worker == null) {
-                worker = new Thread(this);
-                worker.start();
+        } else {
+            part = (Part) cacheElement.getObjectValue();
+            part.sample();
+            if (!part.isFresh()) {
+                refreshQueue.add(part);
             }
+        }
+        if (worker == null) {
+            worker = new Thread(this);
+            worker.start();
         }
         return part;
     }
@@ -201,7 +212,7 @@ public class PartFactory implements Iterable<Part>, Runnable {
                 try {
                     part.refresh();
                 }
-                catch (ApplicationLimitsException e) {
+                catch (ProxyResolutionException e) {
                     logger.error("Bad part", e);
                 }
                 catch (Exception e) {
@@ -209,6 +220,7 @@ public class PartFactory implements Iterable<Part>, Runnable {
                 }
             }
         }
+        worker = null;
     }
 
     public long getNetworkRequests() {

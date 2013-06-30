@@ -43,7 +43,7 @@ public class BOMFactory implements Runnable {
         CacheManager.getInstance().shutdown();
     }
 
-    public BOM create(URL url) {
+    public BOM createBOM(URL url) {
         BOM bom = new BOM(url);
         synchronized (bomQueue) {
             bomQueue.add(bom);
@@ -70,13 +70,15 @@ public class BOMFactory implements Runnable {
                     Thread.sleep(500);
                 }
                 catch (InterruptedException e) {
-                    logger.error("interrtupted", e);
+                    logger.error("interrupted", e);
                 }
             } else {
                 BOM bom = bomQueue.poll();
                 try {
                     if (bom != null) {
-                        bom.resolve();
+                        if (!bom.resolve()) {
+                            bomQueue.add(bom);
+                        }
                     }
                 } catch (Exception e) {
                     logger.error("Could not resolve BOM", e);

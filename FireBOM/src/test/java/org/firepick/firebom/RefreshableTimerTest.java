@@ -26,94 +26,52 @@ import org.junit.Test;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class RefreshableTimerTest {
+
+    public class MockTimer extends RefreshableTimer {
+        @Override
+        public void refresh() {
+            throw new ProxyResolutionException("test");
+        }
+    }
+
     @Test
     public void testRefreshableTimer() throws InterruptedException {
+        new RefreshableProxyTester().testRefreshSuccess(new RefreshableTimer());
+        new RefreshableProxyTester().testRefreshFailure(new MockTimer());
+
         RefreshableTimer timer = new RefreshableTimer();
 
-        // At construction, the proxy is not fresh until it is refreshed.
-        assert (!timer.isFresh());
+        // At construction, the proxy is not fresh and not resolved
+        assertEquals(0, timer.getRefreshInterval());
         assertEquals(0, timer.getSamplesSinceRefresh());
-        assertEquals(0, timer.getExpectedRefreshMillis());
+        assertEquals(0, timer.getAge());
+        assertEquals(0, timer.getRefreshInterval());
 
-        // Sampling does not affect refresh interval
-        Thread.sleep(10);
-        assertEquals(8, timer.getExpectedRefreshMillis());
-        timer.sample();
-        assertEquals(8, timer.getExpectedRefreshMillis());
-        assertEquals(1, timer.getSamplesSinceRefresh());
-
-        // refreshing starts a new refresh interval
-        Thread.sleep(10);
-        assert (!timer.isFresh());
-        timer.refresh();
-        assert (timer.isFresh());
-        assertEquals(0, timer.getSamplesSinceRefresh());
-        assertEquals(16, timer.getExpectedRefreshMillis());
-        timer.sample();
-        assertEquals(1, timer.getSamplesSinceRefresh());
-        assert (timer.isFresh());
-        Thread.sleep(100);
-
-        // second refresh updates refresh interval
-        timer.refresh();
-        assert (timer.isFresh());
-        assertEquals(0, timer.getSamplesSinceRefresh());
-        assertEquals(83d, (double) timer.getExpectedRefreshMillis(), 1);
-        Thread.sleep(70);
-        assert (timer.isFresh());
-        Thread.sleep(70);
-        // viewing makes things stale
-        assert (timer.isFresh());
-        timer.sample();
-        assertEquals(1, timer.getSamplesSinceRefresh());
-        assert (!timer.isFresh());
-
-        // exponential average refresh intervals
-        timer.refresh();
-        assert (timer.isFresh());
-        assertEquals(128d, (double) timer.getExpectedRefreshMillis(), 1);
-        Thread.sleep(70);
-        timer.sample();
-        assert (timer.isFresh());
-        Thread.sleep(70);
-        assert (!timer.isFresh());
+        // default sensitivity has a half-life of about 6 refreshes
         assertEquals(0.8d, timer.getSensitivity(), 0);
+
+        // Sampling is counted and affects sampling/refresh intervals
+        Thread.sleep(10);
+        timer.sample();
+        assertEquals(1, timer.getSamplesSinceRefresh());
+        assertEquals(10, timer.getSampleInterval());
+        assertEquals(10, timer.getRefreshInterval());
+
+        // Refresh does not affect sampling interval
+        timer.refresh();
+        assertEquals(0, timer.getSamplesSinceRefresh());
+        assertEquals(10, timer.getRefreshInterval());
+        assertEquals(10, timer.getSampleInterval());
+
+        // Sampling affects refresh/sampling intervals and, therefore, freshness
+        Thread.sleep(50);
+        timer.sample();
+        assertEquals(1, timer.getSamplesSinceRefresh());
+        assertEquals(42, timer.getRefreshInterval());
     }
 
-    @Test
-    public void testRefreshInterval() throws InterruptedException {
-        RefreshableTimer timer = new RefreshableTimer();
-        Random random = new Random(99);
-        long msStart = System.currentTimeMillis();
-        int refreshInterval = 10;
-        int sampleInterval = 30;
-        long msRefresh = refreshInterval;
-        long msSample = random.nextInt(sampleInterval);
 
-        for (int i = 0; i < 300; i++) {
-            System.out.print(timer.isFresh() ? "." : "?");
-            System.out.print(timer.getSamplesSinceRefresh());
-            System.out.print(" ");
-            System.out.print(timer.getExpectedRefreshMillis());
-            long msElapsed = System.currentTimeMillis() - msStart;
-            if (msElapsed > msRefresh) {
-                msRefresh += refreshInterval;
-                if (!timer.isFresh()) {
-                    timer.refresh();
-                    System.out.print("=>refresh");
-                }
-            }
-            if (msElapsed > msSample) {
-                timer.sample();
-                System.out.print("=>sample");
-                msSample += random.nextInt(sampleInterval);
-            }
-            System.out.println();
-            Thread.sleep(1);
-        }
-        // refresh interval converges to a little less than average sample interval
-        assertEquals((double) sampleInterval, (double) timer.getExpectedRefreshMillis(), sampleInterval/10.0d);
-    }
 }

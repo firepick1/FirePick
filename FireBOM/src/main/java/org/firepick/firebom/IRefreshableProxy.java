@@ -44,9 +44,16 @@ public interface IRefreshableProxy {
     void sample();
 
     /**
-     * The expected refresh interval can be adaptive--if a resource is sampled frequently,
-     * it needs to be refreshed frequently. Rarely sampled resources should be sampled less frequently.
-     * @return expected refresh interval in milliseconds
+     * A resolved proxy is one that has been successfully refreshed at least once in its
+     * lifetime.
+     * @return
      */
-    long getExpectedRefreshMillis();
+    boolean isResolved();
+
+    /**
+     * Return age since last refresh or construction.
+     * @return
+     */
+    long getAge();
+
 }

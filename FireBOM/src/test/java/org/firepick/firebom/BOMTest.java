@@ -21,7 +21,6 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import net.sf.ehcache.CacheManager;
 import org.firepick.relation.RelationPrinter;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,8 +70,10 @@ public class BOMTest {
     public void testD7IH() throws Exception {
         URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
         BOM bom = new BOM(url);
-        assertEquals(0, bom.getRowCount());
+        assertEquals(1, bom.getRowCount());
+        assertFalse(bom.isResolved());
         bom.resolve();
+        assertTrue(bom.isResolved());
         assertEquals(6, bom.getRowCount());
         new RelationPrinter().print(bom, System.out);
         assertEquals("Total cost: ", 13.5696, bom.totalCost(), 0.005d);
@@ -83,7 +84,7 @@ public class BOMTest {
     public void testD7IHMarkdown() throws Exception {
         URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
         BOM bom = new BOM(url);
-        assertEquals(0, bom.getRowCount());
+        assertEquals(1, bom.getRowCount());
         bom.resolve();
         assertEquals(6, bom.getRowCount());
         assertEquals(6, bom.getRowCount());
@@ -123,7 +124,7 @@ public class BOMTest {
         catch (Exception e) {
             caughtException = e;
         }
-        assert (caughtException instanceof ApplicationLimitsException);
+        assert (caughtException instanceof ProxyResolutionException);
         assertEquals(1, bom.getRowCount());
         assert (caughtException.getMessage().contains("Recursive"));
         new RelationPrinter().print(bom, System.out);
@@ -134,10 +135,10 @@ public class BOMTest {
         BOMFactory bomFactory = new BOMFactory();
         URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
         bomFactory.setWorkerPaused(true);
-        BOM bom = bomFactory.create(url);
+        BOM bom = bomFactory.createBOM(url);
         assertEquals(url, bom.getUrl());
         int iterations = 0;
-        assertEquals(0, bom.getRowCount());
+        assertEquals(1, bom.getRowCount());
         bomFactory.printBOM(System.out, bom); // we can print an empty BOM
         assertEquals(BOM.UNRESOLVED, bom.getTitle());
         bomFactory.setWorkerPaused(false);
@@ -155,7 +156,7 @@ public class BOMTest {
         // everything should be cached with no additional URL requests
         long requests = partFactory.getNetworkRequests();
         bomFactory.setWorkerPaused(true);
-        bom = bomFactory.create(url);
+        bom = bomFactory.createBOM(url);
         assert (bomFactory.isWorkerPaused());
         assert (!bom.isResolved());
         Thread.sleep(1000);

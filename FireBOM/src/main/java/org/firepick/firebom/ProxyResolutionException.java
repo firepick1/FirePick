@@ -21,13 +21,16 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-public class ApplicationLimitsException extends ProxyResolutionException {
-    public ApplicationLimitsException(String message) {
+public class ProxyResolutionException extends RuntimeException {
+    public ProxyResolutionException(Exception e) {
+        super(e);
+    }
+
+    public ProxyResolutionException(String message) {
         super(message);
     }
 
-    @SuppressWarnings("unused")
-    public ApplicationLimitsException(String message, Exception e) {
+    public ProxyResolutionException(String message, Exception e) {
         super(message, e);
     }
 }

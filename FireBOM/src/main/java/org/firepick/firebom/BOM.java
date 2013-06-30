@@ -40,7 +40,6 @@ public class BOM implements IRelation, IRefreshableProxy {
     private Map<BOMColumn, BOMColumnDescription> columnMap = new HashMap<BOMColumn, BOMColumnDescription>();
     private URL url;
     private String title;
-    private boolean isResolved;
     private RefreshableTimer refreshableTimer = new RefreshableTimer();
 
     public BOM(URL url) {
@@ -52,6 +51,8 @@ public class BOM implements IRelation, IRefreshableProxy {
             columnDescriptions.add(bomColumnDescription);
             columnMap.put(column, bomColumnDescription);
         }
+        Part part = PartFactory.getInstance().createPart(url);
+        addPart(part, 1);
     }
 
     @Override
@@ -92,13 +93,7 @@ public class BOM implements IRelation, IRefreshableProxy {
             bomRow = new BOMRow(this, part);
             bomRow.setQuantity(quantity);
             rows.add(bomRow);
-            if (!part.isFresh()) {
-                part.refresh();
-            }
             logger.info("addPart({})", part.getId());
-        }
-        for (PartUsage partUsage : part.getRequiredParts()) {
-            addPart(partUsage.getPart(), partUsage.getQuantity() * quantity);
         }
         return bomRow;
     }
@@ -165,25 +160,33 @@ public class BOM implements IRelation, IRefreshableProxy {
     }
 
     public boolean isResolved() {
-        return isResolved;
-    }
-
-    public BOM setResolved(boolean resolved) {
-        isResolved = resolved;
-        return this;
-    }
-
-    public synchronized BOM resolve() {
-        if (!isResolved) {
-            Part part = PartFactory.getInstance().createPart(url);
-            addPart(part, 1);
-            if (part.getRefreshException() != null) {
-                throw part.getRefreshException();
+        for (IPartComparable partComparable : rows) {
+            BOMRow bomRow = (BOMRow) partComparable;
+            if (!bomRow.isResolved()) {
+                return false;
             }
-            setResolved(true);
-            setTitle(part.getTitle());
         }
-        return this;
+        return true;
+    }
+
+    @Override
+    public long getAge() {
+        return refreshableTimer.getAge();
+    }
+
+
+    public synchronized boolean resolve() {
+        if (!isResolved()) {
+            for (IPartComparable partComparable : rows) {
+                BOMRow bomRow = (BOMRow) partComparable;
+                bomRow.resolve();
+            }
+            BOMRow bomRow1 = (BOMRow) rows.first();
+            if (bomRow1 != null && bomRow1.isResolved()) {
+                setTitle(bomRow1.getPart().getTitle());
+            }
+        }
+        return isResolved();
     }
 
     @Override
@@ -212,8 +215,4 @@ public class BOM implements IRelation, IRefreshableProxy {
         refreshableTimer.sample();
     }
 
-    @Override
-    public long getExpectedRefreshMillis() {
-        return refreshableTimer.getExpectedRefreshMillis();
-    }
 }

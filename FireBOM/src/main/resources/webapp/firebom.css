@@ -57,8 +57,11 @@ h3 {
     height: 20px;
     margin-left: 100px;
 }
-.firebom_stale {
+.firebom_unresolved {
     background: #fdd;
+}
+.firebom_stale {
+    background: #ffd;
 }
 .firebom_fresh {
     background: #dfd;

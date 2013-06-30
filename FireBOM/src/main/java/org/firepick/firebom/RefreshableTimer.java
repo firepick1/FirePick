@@ -28,10 +28,13 @@ import java.io.Serializable;
  * Timer adapts the expected refresh interval based on past refresh() and sample() calls.
  */
 public class RefreshableTimer implements IRefreshableProxy, Serializable {
-    private double msExpected;
-    private long msLastRefresh;
+    private Long refreshInterval;
+    private long lastRefreshMillis;
+    private long lastSampleMillis;
     private double sensitivity;
+    private boolean isResolved;
     private long samplesSinceRefresh;
+    private long sampleInterval;
 
     public RefreshableTimer() {
         this(0.8d);
@@ -42,45 +45,32 @@ public class RefreshableTimer implements IRefreshableProxy, Serializable {
             throw new IllegalArgumentException("sensitivity must be between [0..1]");
         }
         this.sensitivity = sensitivity;
-        this.msLastRefresh = System.currentTimeMillis();
-        this.msExpected = 0;
-    }
-
-    public long getExpectedRefreshMillis() {
-        if (isFresh()) {
-            return (long) msExpected;
-        }
-        long now = System.currentTimeMillis();
-        return (long) (double) computeExpected(now);
+        this.lastRefreshMillis = System.currentTimeMillis();
+        this.lastSampleMillis = lastRefreshMillis;
     }
 
     public void refresh() {
-        long now = System.currentTimeMillis();
-        msExpected = computeExpected(now);
-        msLastRefresh = now;
+        lastRefreshMillis = System.currentTimeMillis();
         samplesSinceRefresh = 0;
+        isResolved = true;
     }
 
     public void sample() {
         samplesSinceRefresh++;
-    }
-
-    private Double computeExpected(long msNow) {
-        long msElapsed = msNow - msLastRefresh;
-        double result = getSensitivity() * msElapsed + (1 - getSensitivity()) * msExpected;
-        return result;
+        long nowMillis = System.currentTimeMillis();
+        long msElapsed = nowMillis - lastSampleMillis;
+        if (isResolved()) {
+            sampleInterval =(long)(getSensitivity() * msElapsed + (1 - getSensitivity()) * sampleInterval);
+        } else {
+            sampleInterval = Math.max(1, msElapsed);
+        }
+        lastSampleMillis = nowMillis;
     }
 
     public boolean isFresh() {
-        if (msExpected == 0) {
-            return false;
-        }
-        if (samplesSinceRefresh == 0) {
-            return true;
-        }
-        long msElapsed = System.currentTimeMillis() - msLastRefresh;
-
-        return msElapsed <= msExpected;
+        long refreshInterval = getRefreshInterval();
+        long ageDiff = refreshInterval - getAge();
+        return isResolved() && ageDiff >= 0;
     }
 
     public double getSensitivity() {
@@ -89,5 +79,33 @@ public class RefreshableTimer implements IRefreshableProxy, Serializable {
 
     public long getSamplesSinceRefresh() {
         return samplesSinceRefresh;
+    }
+
+    public boolean isResolved() {
+        return isResolved;
+    }
+
+    protected RefreshableTimer setResolved(boolean value) {
+        isResolved = value;
+        return this;
+    }
+
+    public long getAge() {
+        return System.currentTimeMillis() - lastRefreshMillis;
+    }
+
+    public long getRefreshInterval() {
+        if (refreshInterval == null)  {
+            return getSampleInterval();
+        }
+        return refreshInterval;
+    }
+
+    public void setRefreshInterval(Long milliseconds) {
+        this.refreshInterval = milliseconds;
+    }
+
+    public long getSampleInterval() {
+        return sampleInterval;
     }
 }

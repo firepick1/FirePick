@@ -169,7 +169,11 @@ public class BOMHtmlPrinter extends RelationPrinter {
         printStream.println("</td>");
 
         printStream.print("<td class='firebom_td firebom_longtext'>");
-        printStream.print(bomRow.getPart().getTitle());
+        if (bomRow.isResolved()) {
+            printStream.print(bomRow.getPart().getTitle());
+        } else {
+            printStream.print("<img src='/firebom/processing.gif' height='20px'>");
+        }
         printStream.println("</td>");
 
         printStream.println("</tr>");

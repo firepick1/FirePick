@@ -41,6 +41,52 @@ public class PartFactoryTest {
     }
 
     @Test
+    public void testGoodPart() throws Exception {
+        URL x50k = new URL("https://github.com/firepick1/FirePick/wiki/X50K");
+        Part x50lPart = partFactory.createPart(x50k);
+        new RefreshableProxyTester().testRefreshSuccess(x50lPart);
+        assertEquals(null, x50lPart.getRefreshException());
+
+        Part d7ihPart = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
+        new RefreshableProxyTester().testRefreshSuccess(d7ihPart);
+        assertEquals(null, d7ihPart.getRefreshException());
+    }
+
+    @Test
+    public void testTemporarilyBadPart() throws Exception {
+        Part d7ihPart = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
+        ProxyResolutionException dummyException = new ProxyResolutionException("dummy");
+
+        // simulate a bad connection
+        d7ihPart.setRefreshException(dummyException);
+        assertEquals(dummyException, d7ihPart.getRefreshException());
+        Thread.sleep(d7ihPart.getRefreshInterval());
+        assert (!d7ihPart.isFresh());
+
+        Part d7ihPart2 = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
+        for (int i=0; i < 60; i++) {
+            if (d7ihPart2.isResolved()) {
+                break;
+            }
+            Thread.sleep(1000);
+        }
+
+        assertEquals(d7ihPart, d7ihPart2); // cache hit
+        assertEquals(null, d7ihPart2.getRefreshException());
+        assert(d7ihPart2.isResolved());
+        System.out.println("age:" + d7ihPart2.getAge() + " refreshInterval:" + d7ihPart2.getRefreshInterval());
+        assert(d7ihPart2.isFresh());
+    }
+
+    @Test
+    public void testBadPart() throws Exception {
+        Part part = partFactory.createPart(new URL("https://github.com/badurl"));
+        new RefreshableProxyTester().testRefreshFailure(part);
+        Exception e = part.getRefreshException();
+        assert (e instanceof ProxyResolutionException);
+    }
+
+    @Test
     public void testInventables() throws Exception {
         new PartTester(partFactory, "https://www.inventables.com/technologies/ball-bearings")
                 .testId("25196-01").testPackageCost(1.5).testPackageUnits(1).testUnitCost(1.5);
@@ -82,7 +128,7 @@ public class PartFactoryTest {
         Thread.sleep(2000);
 
         Part part3 = PartFactory.getInstance().createPart(url);
-        assert(part1 != part3);
+        assert (part1 != part3);
         configuration.setTimeToIdleSeconds(idleTime);
         configuration.setTimeToLiveSeconds(liveTime);
     }

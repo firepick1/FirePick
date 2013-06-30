@@ -1067,19 +1067,19 @@ Here is an example of CacheManager level resource tuning, which will use up to 4
          maxEntriesLocalDisk="1000000"
         eternal="false"
         diskSpoolBufferSizeMB="20"
-        timeToIdleSeconds="30"
-        timeToLiveSeconds="60"
+        timeToIdleSeconds="604800"
+        timeToLiveSeconds="604800"
         memoryStoreEvictionPolicy="LFU"
         transactionalMode="off">
         <persistence strategy="localTempSwap"/>
     </cache>
 
     <cache name="URL-contents"
-           maxEntriesLocalHeap="1000"
+           maxEntriesLocalHeap="10000"
            maxEntriesLocalDisk="100000"
            eternal="false"
            diskSpoolBufferSizeMB="20"
-           timeToIdleSeconds="30"
+           timeToIdleSeconds="10"
            timeToLiveSeconds="60"
            memoryStoreEvictionPolicy="LFU"
            transactionalMode="off">

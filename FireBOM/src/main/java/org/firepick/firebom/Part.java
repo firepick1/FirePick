@@ -53,6 +53,7 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     private RefreshableTimer refreshableTimer;
     private boolean refreshInProgress;
     private RuntimeException refreshException;
+    private boolean isResolved;
     private Lock refreshLock = new ReentrantLock();
 
     public Part(PartFactory partFactory) {
@@ -66,7 +67,6 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     }
 
     public synchronized String getId() {
-        sample();
         if (id == null) {
             if (sourcePart != null) {
                 return sourcePart.getId();
@@ -97,7 +97,6 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     }
 
     public synchronized double getPackageCost() {
-        sample();
         double cost = 0;
 
         if (packageCost == null) {
@@ -123,7 +122,6 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     }
 
     public synchronized double getPackageUnits() {
-        sample();
         double units = 1;
         if (packageUnits == null) {
             if (sourcePart != null) {
@@ -144,18 +142,9 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     }
 
     public synchronized double getUnitCost() {
-        sample();
         return getPackageCost() / getPackageUnits();
     }
 
-    private void clear() {
-        setId(null);
-        setTitle(null);
-        setVendor(null);
-        setPackageCost(null);
-        setPackageUnits(null);
-        // do not clear URL;
-    }
 
     protected List<String> parseListItemStrings(String ul) throws IOException {
         List<String> result = new ArrayList<String>();
@@ -185,7 +174,6 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     }
 
     public synchronized String getTitle() {
-        sample();
         if (title == null) {
             if (sourcePart == null) {
                 return getId();
@@ -230,7 +218,6 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     }
 
     public synchronized String getVendor() {
-        sample();
         if (vendor == null) {
             if (sourcePart == null) {
                 return getUrl().getHost();
@@ -247,7 +234,6 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     }
 
     public synchronized List<PartUsage> getRequiredParts() {
-        sample();
         return Collections.unmodifiableList(requiredParts);
     }
 
@@ -260,33 +246,30 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
         return this;
     }
 
-    protected RefreshableTimer getRefreshableTimer() {
-        return refreshableTimer;
-    }
-
     @Override
     public final void refresh() {
-        if (refreshException != null) {
-            throw refreshException;
-        }
         synchronized (refreshLock) {
             if (refreshInProgress) {
                 setRefreshException(new ApplicationLimitsException("Recursive part reference detected: " + url));
                 throw getRefreshException();
             }
             try {
+                long msStart = System.currentTimeMillis();
                 refreshInProgress = true;
-                clear();
+                setRefreshException(null);
                 refreshFromRemote();
-                logger.info("{} {} {}x{} {}", new Object[]{id, packageCost, packageUnits, title, url});
+                long msElapsed = System.currentTimeMillis() - msStart;
+                isResolved = true;
+                logger.info("{} {} {}x{} {} {}ms", new Object[]{id, packageCost, packageUnits, title, url, msElapsed});
                 refreshableTimer.refresh();
             }
-            catch (ApplicationLimitsException e) {
+            catch (ProxyResolutionException e) {
                 setRefreshException(e);
                 throw e;
             }
-            catch (Throwable e) {
+            catch (Exception e) {
                 logger.warn("Could not refresh part {}", getUrl(), e);
+                throw new ProxyResolutionException(e);
             }
             finally {
                 refreshInProgress = false;
@@ -313,9 +296,12 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
         refreshableTimer.sample();
     }
 
-    @Override
-    public synchronized long getExpectedRefreshMillis() {
-        return refreshableTimer.getExpectedRefreshMillis();
+    public synchronized long getRefreshInterval() {
+        return refreshableTimer.getRefreshInterval();
+    }
+
+    public synchronized long getAge() {
+        return refreshableTimer.getAge();
     }
 
     @Override
@@ -339,4 +325,12 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
     public void setRefreshException(RuntimeException refreshException) {
         this.refreshException = refreshException;
     }
+
+    public boolean isResolved() {
+        if (sourcePart != null) {
+            return sourcePart.isResolved() && isResolved;
+        }
+        return isResolved;
+    }
+
 }
