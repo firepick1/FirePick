@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.Format;
 
-public class BOMRow extends PartUsage implements IRow, IPartComparable {
+public class BOMRow extends PartUsage implements IRow {
     private static Logger logger = LoggerFactory.getLogger(BOMRow.class);
 
     private BOM bom;
@@ -95,11 +95,6 @@ public class BOMRow extends PartUsage implements IRow, IPartComparable {
                 break;
         }
         return value;
-    }
-
-    @Override
-    public int compareTo(IPartComparable that) {
-        return getPart().compareTo(that.getPart());
     }
 
     @Override

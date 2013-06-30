@@ -23,7 +23,7 @@ package org.firepick.firebom;
 
 import java.io.Serializable;
 
-public class PartUsage implements Serializable {
+public class PartUsage implements Serializable, IPartComparable {
     private Part part;
     private double quantity;
     private String vendor;
@@ -65,6 +65,16 @@ public class PartUsage implements Serializable {
     @Override
     public String toString() {
         return part.toString();
+    }
+
+    @Override
+    public int compareTo(IPartComparable that) {
+        int cmp = getPart().compareTo(that.getPart());
+        if (cmp == 0 && that instanceof PartUsage) {
+            PartUsage thatPartUsage = (PartUsage) that;
+            cmp = (int) Math.signum(getQuantity() - thatPartUsage.getQuantity());
+        }
+        return cmp;
     }
 
 }

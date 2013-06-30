@@ -27,8 +27,6 @@ public class BOMFactoryResource {
         BOMFactory bomFactory = new BOMFactory();
         BOM bom = bomFactory.createBOM(new URL(url));
 
-        Thread.sleep(1000); // wait for BOM to resolve
-
         ByteArrayOutputStream bosHtml = new ByteArrayOutputStream();
         PrintStream psHtml = new PrintStream(bosHtml);
         InputStream is;
