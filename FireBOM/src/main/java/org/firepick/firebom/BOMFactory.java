@@ -32,8 +32,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BOMFactory implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(BOMFactory.class);
-    private OutputType outputType = OutputType.DEFAULT;
     private final ConcurrentLinkedQueue<BOM> bomQueue = new ConcurrentLinkedQueue<BOM>();
+    private OutputType outputType = OutputType.DEFAULT;
     private Thread worker;
     private PartFactory partFactory;
     private boolean workerPaused;
@@ -73,14 +73,21 @@ public class BOMFactory implements Runnable {
                     logger.error("interrupted", e);
                 }
             } else {
-                BOM bom = bomQueue.poll();
+                BOM bom;
+                synchronized (bomQueue) {
+                    bom = bomQueue.poll();
+                }
                 try {
                     if (bom != null) {
                         if (!bom.resolve()) {
-                            bomQueue.add(bom);
+                            synchronized (bomQueue) {
+                                logger.info("Requeing bom for resolve() {}", bom.getUrl());
+                                bomQueue.add(bom);
+                            }
                         }
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     logger.error("Could not resolve BOM", e);
                 }
             }

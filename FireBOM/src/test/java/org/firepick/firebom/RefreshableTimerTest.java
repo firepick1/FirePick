@@ -73,5 +73,20 @@ public class RefreshableTimerTest {
         assertEquals(42, timer.getRefreshInterval());
     }
 
+    @Test
+    public void testMinRefreshInterval() {
+        RefreshableTimer timer = new RefreshableTimer();
+
+        assertEquals(0, timer.getMinRefreshInterval());
+        timer.setMinRefreshInterval(100);
+        assertEquals(100, timer.getMinRefreshInterval());
+        assertEquals(100, timer.getRefreshInterval());
+
+        timer.refresh();
+        assert(timer.isFresh());
+        assertEquals(100, timer.getMinRefreshInterval());
+        assertEquals(100, timer.getRefreshInterval());
+    }
+
 
 }

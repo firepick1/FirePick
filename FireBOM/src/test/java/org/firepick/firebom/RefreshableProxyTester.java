@@ -69,7 +69,7 @@ public class RefreshableProxyTester {
         proxy.sample();
         testInitialProxyState(proxy);
 
-        ProxyResolutionException proxyResolutionException = null;
+        long ageBefore = proxy.getAge();
         try {
             proxy.refresh();
             fail("Expected refresh failure");
@@ -78,6 +78,13 @@ public class RefreshableProxyTester {
             assert (e instanceof ProxyResolutionException);
         }
 
+        try {
+            Thread.sleep(getAgeIncrement());
+        }
+        catch (InterruptedException e) {
+            fail();
+        }
+        assert(proxy.getAge() > ageBefore);
         assert (!proxy.isFresh());
         assert (!proxy.isResolved());
 

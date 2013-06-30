@@ -27,6 +27,8 @@ public class BOMFactoryResource {
         BOMFactory bomFactory = new BOMFactory();
         BOM bom = bomFactory.createBOM(new URL(url));
 
+        Thread.sleep(1000); // wait for BOM to resolve
+
         ByteArrayOutputStream bosHtml = new ByteArrayOutputStream();
         PrintStream psHtml = new PrintStream(bosHtml);
         InputStream is;
@@ -42,9 +44,10 @@ public class BOMFactoryResource {
         while (br.ready()) {
             String line = br.readLine();
             if (line.contains("<!--BOM-->")) {
+                boolean isResolved = bom.isResolved();
                 bomFactory.printBOM(psHtml, bom);
                 psHtml.println("<script>$('#url').val('" + url + "')</script>");
-                if (bom.isResolved()) {
+                if (isResolved) {
                     psHtml.print("<div class='firebom_copylink'>");
                     psHtml.print("<button type='button' onclick='copyLink()'>");
                     psHtml.print("Link this <img style='position:relative;top:2px;' src='http://upload.wikimedia.org/wikipedia/commons/4/45/FireBOM.JPG' height=12px/>");

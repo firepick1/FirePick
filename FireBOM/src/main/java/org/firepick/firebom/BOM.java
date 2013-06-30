@@ -31,9 +31,8 @@ import java.net.URL;
 import java.util.*;
 
 public class BOM implements IRelation, IRefreshableProxy {
-    private static Logger logger = LoggerFactory.getLogger(BOM.class);
-
     public final static String UNRESOLVED = "(Processing...)";
+    private static Logger logger = LoggerFactory.getLogger(BOM.class);
     private List<IColumnDescription> columnDescriptions;
     private TreeSet<IPartComparable> rows = new TreeSet<IPartComparable>();
     private int maximumParts;
@@ -71,7 +70,11 @@ public class BOM implements IRelation, IRefreshableProxy {
 
     @Override
     public Iterator<IRow> iterator() {
-        return new BOMRowIterator(rows.iterator());
+        List<IPartComparable> rowsCopy;
+        synchronized (rows) {
+            rowsCopy = new ArrayList(rows);
+        }
+        return new BOMRowIterator(rowsCopy.iterator());
     }
 
     public BOMRow lookup(IPartComparable part) {
@@ -92,7 +95,9 @@ public class BOM implements IRelation, IRefreshableProxy {
             }
             bomRow = new BOMRow(this, part);
             bomRow.setQuantity(quantity);
-            rows.add(bomRow);
+            synchronized (rows) {
+                rows.add(bomRow);
+            }
             logger.info("addPart({})", part.getId());
         }
         return bomRow;
@@ -112,26 +117,32 @@ public class BOM implements IRelation, IRefreshableProxy {
 
     public double totalCost() {
         double cost = 0;
-        for (IPartComparable row : rows) {
-            BOMRow bomRow = (BOMRow) row;
-            cost += bomRow.getCost();
+        synchronized (rows) {
+            for (IPartComparable row : rows) {
+                BOMRow bomRow = (BOMRow) row;
+                cost += bomRow.getCost();
+            }
         }
         return cost;
     }
 
     public int partCount() {
         int count = 0;
-        for (IPartComparable row : rows) {
-            BOMRow bomRow = (BOMRow) row;
-            count += bomRow.getQuantity();
+        synchronized (rows) {
+            for (IPartComparable row : rows) {
+                BOMRow bomRow = (BOMRow) row;
+                count += bomRow.getQuantity();
+            }
         }
         return count;
     }
 
     public boolean isValid() {
-        for (IPartComparable row : rows) {
-            if (!row.getPart().isFresh()) {
-                return false;
+        synchronized (rows) {
+            for (IPartComparable row : rows) {
+                if (!row.getPart().isFresh()) {
+                    return false;
+                }
             }
         }
         return true;
@@ -160,10 +171,12 @@ public class BOM implements IRelation, IRefreshableProxy {
     }
 
     public boolean isResolved() {
-        for (IPartComparable partComparable : rows) {
-            BOMRow bomRow = (BOMRow) partComparable;
-            if (!bomRow.isResolved()) {
-                return false;
+        synchronized (rows) {
+            for (IPartComparable partComparable : rows) {
+                BOMRow bomRow = (BOMRow) partComparable;
+                if (!bomRow.isResolved()) {
+                    return false;
+                }
             }
         }
         return true;
@@ -174,12 +187,13 @@ public class BOM implements IRelation, IRefreshableProxy {
         return refreshableTimer.getAge();
     }
 
-
-    public synchronized boolean resolve() {
+    public boolean resolve() {
         if (!isResolved()) {
-            for (IPartComparable partComparable : rows) {
-                BOMRow bomRow = (BOMRow) partComparable;
-                bomRow.resolve();
+            synchronized (rows) {
+                for (IPartComparable partComparable : rows) {
+                    BOMRow bomRow = (BOMRow) partComparable;
+                    bomRow.resolve();
+                }
             }
             BOMRow bomRow1 = (BOMRow) rows.first();
             if (bomRow1 != null && bomRow1.isResolved()) {
@@ -191,20 +205,24 @@ public class BOM implements IRelation, IRefreshableProxy {
 
     @Override
     public void refresh() {
-        for (IPartComparable row: rows) {
-            Part part = row.getPart();
-            if (!part.isFresh()) {
-                part.refresh();
+        synchronized (rows) {
+            for (IPartComparable row : rows) {
+                Part part = row.getPart();
+                if (!part.isFresh()) {
+                    part.refresh();
+                }
             }
         }
     }
 
     @Override
     public boolean isFresh() {
-        for (IPartComparable row: rows) {
-            Part part = row.getPart();
-            if (!part.isFresh()) {
-                return false;
+        synchronized (rows) {
+            for (IPartComparable row : rows) {
+                Part part = row.getPart();
+                if (!part.isFresh()) {
+                    return false;
+                }
             }
         }
         return true;

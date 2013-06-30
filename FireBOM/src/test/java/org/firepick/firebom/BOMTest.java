@@ -24,6 +24,8 @@ package org.firepick.firebom;
 import org.firepick.relation.RelationPrinter;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -32,6 +34,8 @@ import java.net.URL;
 import static org.junit.Assert.*;
 
 public class BOMTest {
+    private static Logger logger = LoggerFactory.getLogger(BOMTest.class);
+
     private PartFactory partFactory;
 
     @Before
@@ -72,7 +76,10 @@ public class BOMTest {
         BOM bom = new BOM(url);
         assertEquals(1, bom.getRowCount());
         assertFalse(bom.isResolved());
-        bom.resolve();
+        while (!bom.isResolved()) {
+            logger.info("bom.resolve()");
+            bom.resolve();
+        }
         assertTrue(bom.isResolved());
         assertEquals(6, bom.getRowCount());
         new RelationPrinter().print(bom, System.out);
@@ -117,16 +124,8 @@ public class BOMTest {
         System.out.println(url1);
         System.out.println(url2);
         BOM bom = new BOM(url1);
-        Exception caughtException = null;
-        try {
-            bom.resolve();
-        }
-        catch (Exception e) {
-            caughtException = e;
-        }
-        assert (caughtException instanceof ProxyResolutionException);
+        bom.resolve();
         assertEquals(1, bom.getRowCount());
-        assert (caughtException.getMessage().contains("Recursive"));
         new RelationPrinter().print(bom, System.out);
     }
 

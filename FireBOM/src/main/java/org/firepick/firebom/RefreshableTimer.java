@@ -29,6 +29,7 @@ import java.io.Serializable;
  */
 public class RefreshableTimer implements IRefreshableProxy, Serializable {
     private Long refreshInterval;
+    private long minRefreshInterval;
     private long lastRefreshMillis;
     private long lastSampleMillis;
     private double sensitivity;
@@ -95,10 +96,11 @@ public class RefreshableTimer implements IRefreshableProxy, Serializable {
     }
 
     public long getRefreshInterval() {
+        Long value = refreshInterval;
         if (refreshInterval == null)  {
-            return getSampleInterval();
+            value = getSampleInterval();
         }
-        return refreshInterval;
+        return Math.max(getMinRefreshInterval(), value);
     }
 
     public void setRefreshInterval(Long milliseconds) {
@@ -107,5 +109,14 @@ public class RefreshableTimer implements IRefreshableProxy, Serializable {
 
     public long getSampleInterval() {
         return sampleInterval;
+    }
+
+    public long getMinRefreshInterval() {
+        return minRefreshInterval;
+    }
+
+    public RefreshableTimer setMinRefreshInterval(long minRefreshInterval) {
+        this.minRefreshInterval = minRefreshInterval;
+        return this;
     }
 }

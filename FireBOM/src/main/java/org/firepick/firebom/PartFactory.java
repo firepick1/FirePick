@@ -212,11 +212,10 @@ public class PartFactory implements Iterable<Part>, Runnable {
                 try {
                     part.refresh();
                 }
-                catch (ProxyResolutionException e) {
-                    logger.error("Bad part", e);
-                }
                 catch (Exception e) {
-
+                    if (e != part.getRefreshException()) {
+                        throw new ProxyResolutionException("Uncaught exception", e);
+                    }
                 }
             }
         }

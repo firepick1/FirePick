@@ -57,8 +57,11 @@ h3 {
     height: 20px;
     margin-left: 100px;
 }
-.firebom_unresolved {
+.firebom_error {
     background: #fdd;
+}
+.firebom_unresolved {
+    background: #ccc;
 }
 .firebom_stale {
     background: #ffd;

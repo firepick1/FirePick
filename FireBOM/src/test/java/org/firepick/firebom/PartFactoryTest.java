@@ -74,7 +74,7 @@ public class PartFactoryTest {
         assertEquals(d7ihPart, d7ihPart2); // cache hit
         assertEquals(null, d7ihPart2.getRefreshException());
         assert(d7ihPart2.isResolved());
-        System.out.println("age:" + d7ihPart2.getAge() + " refreshInterval:" + d7ihPart2.getRefreshInterval());
+        //System.out.println("age:" + d7ihPart2.getAge() + " refreshInterval:" + d7ihPart2.getRefreshInterval());
         assert(d7ihPart2.isFresh());
     }
 

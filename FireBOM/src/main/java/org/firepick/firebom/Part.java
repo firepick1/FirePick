@@ -145,7 +145,6 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
         return getPackageCost() / getPackageUnits();
     }
 
-
     protected List<String> parseListItemStrings(String ul) throws IOException {
         List<String> result = new ArrayList<String>();
         String[] liParts = ul.split("</li>");
@@ -259,6 +258,7 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
                 setRefreshException(null);
                 refreshFromRemote();
                 long msElapsed = System.currentTimeMillis() - msStart;
+                setMinRefeshInterval(msElapsed);
                 isResolved = true;
                 logger.info("{} {} {}x{} {} {}ms", new Object[]{id, packageCost, packageUnits, title, url, msElapsed});
                 refreshableTimer.refresh();
@@ -269,7 +269,9 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
             }
             catch (Exception e) {
                 logger.warn("Could not refresh part {}", getUrl(), e);
-                throw new ProxyResolutionException(e);
+                ProxyResolutionException proxyResolutionException = new ProxyResolutionException(e);
+                setRefreshException(proxyResolutionException);
+                throw proxyResolutionException;
             }
             finally {
                 refreshInProgress = false;
@@ -333,4 +335,11 @@ public abstract class Part implements IPartComparable, Serializable, IRefreshabl
         return isResolved;
     }
 
+    public long getMinRefeshInterval() {
+        return refreshableTimer.getMinRefreshInterval();
+    }
+
+    public void setMinRefeshInterval(long minRefeshInterval) {
+        refreshableTimer.setMinRefreshInterval(minRefeshInterval);
+    }
 }

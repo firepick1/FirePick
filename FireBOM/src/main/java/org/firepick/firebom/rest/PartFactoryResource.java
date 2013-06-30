@@ -77,16 +77,20 @@ public class PartFactoryResource {
             psHtml.print("'>");
             psHtml.print(part.getTitle());
             psHtml.print("</td>");
-            if (!part.isResolved()) {
+            if (part.getRefreshException() != null) {
+                psHtml.print("<td class='firebom_td firebom_error' title='");
+                psHtml.print(part.getRefreshException().getMessage());
+                psHtml.print("'>");
+            } else if (!part.isResolved()) {
                 psHtml.print("<td class='firebom_td firebom_unresolved'>");
             } else if (!part.isFresh()) {
                 psHtml.print("<td class='firebom_td firebom_stale'>");
             } else {
                 psHtml.print("<td class='firebom_td firebom_fresh'>");
             }
-            psHtml.print((part.getAge() + 500)/ 1000);
+            psHtml.print((part.getAge() + 500) / 1000);
             psHtml.print("@");
-            psHtml.print((part.getRefreshInterval()+500)/1000);
+            psHtml.print((part.getRefreshInterval() + 500) / 1000);
             psHtml.print("</td>");
             psHtml.print("</tr>");
         }
