@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.bom;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,6 +21,10 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.Main;
+import org.firepick.firebom.exception.ApplicationLimitsException;
+import org.firepick.firebom.part.Part;
+import org.firepick.firebom.part.PartFactory;
 import org.firepick.relation.RelationPrinter;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,7 +71,7 @@ public class BOMTest {
         BOM bom = new BOM(url);
         bom.resolve();
         assertFalse(bom.isValid());
-        new RelationPrinter().print(bom, System.out);
+        new RelationPrinter().print(bom, System.out, null);
     }
 
     @Test
@@ -82,7 +86,7 @@ public class BOMTest {
         }
         assertTrue(bom.isResolved());
         assertEquals(6, bom.getRowCount());
-        new RelationPrinter().print(bom, System.out);
+        new RelationPrinter().print(bom, System.out, null);
         assertEquals("Total cost: ", 13.5696, bom.totalCost(), 0.005d);
         assertEquals("Part count:", 6, bom.partCount());
     }
@@ -95,7 +99,7 @@ public class BOMTest {
         bom.resolve();
         assertEquals(6, bom.getRowCount());
         assertEquals(6, bom.getRowCount());
-        new BOMMarkdownPrinter().print(bom, System.out);
+        new BOMMarkdownPrinter().print(bom, System.out, null);
     }
 
     @Test
@@ -125,8 +129,8 @@ public class BOMTest {
         System.out.println(url2);
         BOM bom = new BOM(url1);
         bom.resolve();
-        assertEquals(1, bom.getRowCount());
-        new RelationPrinter().print(bom, System.out);
+        assertEquals(2, bom.getRowCount());
+        new RelationPrinter().print(bom, System.out, null);
     }
 
     @Test
@@ -138,7 +142,7 @@ public class BOMTest {
         assertEquals(url, bom.getUrl());
         int iterations = 0;
         assertEquals(1, bom.getRowCount());
-        bomFactory.printBOM(System.out, bom); // we can print an empty BOM
+        bomFactory.printBOM(System.out, bom, null); // we can print an empty BOM
         assertEquals(BOM.UNRESOLVED, bom.getTitle());
         bomFactory.setWorkerPaused(false);
         do {
@@ -150,11 +154,11 @@ public class BOMTest {
         assert (iterations > 0);
         assertEquals(6, bom.getRowCount());
         assertEquals("Adjustable idler, 6-7mm belt, horizontal extrusions", bom.getTitle());
-        bomFactory.printBOM(System.out, bom);
+        bomFactory.printBOM(System.out, bom, null);
 
         // everything should be cached with no additional URL requests
-        long requests = partFactory.getNetworkRequests();
         bomFactory.setWorkerPaused(true);
+        Thread.sleep(1000);
         bom = bomFactory.createBOM(url);
         assert (bomFactory.isWorkerPaused());
         assert (!bom.isResolved());
@@ -165,7 +169,6 @@ public class BOMTest {
         assertEquals(6, bom.getRowCount());
         assert (bom.isResolved());
         assertEquals("Adjustable idler, 6-7mm belt, horizontal extrusions", bom.getTitle());
-        bomFactory.printBOM(System.out, bom);
-        assertEquals(requests, partFactory.getNetworkRequests());
+        bomFactory.printBOM(System.out, bom, null);
     }
 }

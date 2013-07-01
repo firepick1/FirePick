@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.part;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -32,10 +32,10 @@ public class PartTester {
     private URL url;
     private Part part;
 
-    public PartTester(PartFactory partFactory, String url) throws IOException {
+    public PartTester(PartFactory partFactory, String url) throws Exception {
         this.url = new URL(url);
         part = partFactory.createPart(this.url);
-        part.refresh();
+        part.refreshAll();
         assert(part.isFresh());
     }
 

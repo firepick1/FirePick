@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.bom;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -22,6 +22,8 @@ package org.firepick.firebom;
  */
 
 import net.sf.ehcache.CacheManager;
+import org.firepick.firebom.part.PartFactory;
+import org.firepick.relation.IRowVisitor;
 import org.firepick.relation.RelationPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class BOMFactory implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(BOMFactory.class);
@@ -37,6 +41,7 @@ public class BOMFactory implements Runnable {
     private Thread worker;
     private PartFactory partFactory;
     private boolean workerPaused;
+    private Lock backgroundLock = new ReentrantLock();
 
     public void shutdown() {
         logger.info("Shutting down Ehcache");
@@ -73,14 +78,11 @@ public class BOMFactory implements Runnable {
                     logger.error("interrupted", e);
                 }
             } else {
-                BOM bom;
-                synchronized (bomQueue) {
-                    bom = bomQueue.poll();
-                }
                 try {
-                    if (bom != null) {
-                        if (!bom.resolve()) {
-                            synchronized (bomQueue) {
+                    synchronized (bomQueue) {
+                        BOM bom = bomQueue.poll();
+                        if (bom != null) {
+                            if (!bom.resolve()) {
                                 logger.info("Requeing bom for resolve() {}", bom.getUrl());
                                 bomQueue.add(bom);
                             }
@@ -94,20 +96,20 @@ public class BOMFactory implements Runnable {
         }
     }
 
-    public BOMFactory printBOM(PrintStream printStream, BOM bom) {
+    public BOMFactory printBOM(PrintStream printStream, BOM bom, IRowVisitor rowVisitor) {
         switch (outputType) {
             case MARKDOWN:
-                new BOMMarkdownPrinter().print(bom, printStream);
+                new BOMMarkdownPrinter().print(bom, printStream, rowVisitor);
                 break;
             case HTML:
-                new BOMHtmlPrinter().setPrintHtmlWrapper(true).setTitle(bom.getTitle()).print(bom, printStream);
+                new BOMHtmlPrinter().setPrintHtmlWrapper(true).setTitle(bom.getTitle()).print(bom, printStream, rowVisitor);
                 break;
             case HTML_TABLE:
-                new BOMHtmlPrinter().setPrintHtmlWrapper(false).setTitle(bom.getTitle()).print(bom, printStream);
+                new BOMHtmlPrinter().setPrintHtmlWrapper(false).setTitle(bom.getTitle()).print(bom, printStream, rowVisitor);
                 break;
             default:
             case CSV:
-                new RelationPrinter().print(bom, printStream);
+                new RelationPrinter().print(bom, printStream, rowVisitor);
                 break;
         }
 
@@ -140,7 +142,10 @@ public class BOMFactory implements Runnable {
     }
 
     public BOMFactory setWorkerPaused(boolean workerPaused) {
-        this.workerPaused = workerPaused;
+        synchronized (bomQueue) {
+            logger.info("setWorkerPaused({})", workerPaused);
+            this.workerPaused = workerPaused;
+        }
         return this;
     }
 

@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.part;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,6 +21,8 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.exception.ProxyResolutionException;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,14 +43,14 @@ public class HtmlPart extends Part {
         List<PartUsage> newRequiredParts = null;
 
         for (String ulPart : ulParts) {
-            if (ulPart.contains("@Sources")) {
+            if (ulPart.contains("@Source")) {
                 newSourceList = parseListItemStrings(ulPart);
                 if (newSourceList.size() == 0) {
-                    throw new RuntimeException("GitHub page has no @Sources tag");
+                    throw new ProxyResolutionException("Html page has no @Sources tag");
                 }
                 URL sourceUrl = parseLink(newSourceList.get(0));
                 newSourcePart = PartFactory.getInstance().createPart(sourceUrl);
-                newSourcePart.refresh();
+          //      newSourcePart.refresh();
             } else if (ulPart.contains("@Require")) {
                 List<String> requiredItems = parseListItemStrings(ulPart);
                 newRequiredParts = new ArrayList<PartUsage>();
@@ -56,7 +58,7 @@ public class HtmlPart extends Part {
                     URL link = parseLink(required);
                     double quantity = parseQuantity(required, 1);
                     Part part = PartFactory.getInstance().createPart(link);
-                    part.refresh();
+         //           part.refresh();
                     PartUsage partUsage = new PartUsage().setPart(part).setQuantity(quantity);
                     newRequiredParts.add(partUsage);
                 }

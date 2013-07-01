@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.part;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -25,6 +25,8 @@ package org.firepick.firebom;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
+import org.firepick.firebom.RefreshableProxyTester;
+import org.firepick.firebom.exception.ProxyResolutionException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -42,6 +44,7 @@ public class PartFactoryTest {
 
     @Test
     public void testGoodPart() throws Exception {
+        CacheManager.getInstance().clearAll();
         URL x50k = new URL("https://github.com/firepick1/FirePick/wiki/X50K");
         Part x50lPart = partFactory.createPart(x50k);
         new RefreshableProxyTester().testRefreshSuccess(x50lPart);
@@ -54,7 +57,8 @@ public class PartFactoryTest {
 
     @Test
     public void testTemporarilyBadPart() throws Exception {
-        Part d7ihPart = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
+        URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
+        Part d7ihPart = new GitHubPart(PartFactory.getInstance(), url);
         ProxyResolutionException dummyException = new ProxyResolutionException("dummy");
 
         // simulate a bad connection
@@ -63,19 +67,11 @@ public class PartFactoryTest {
         Thread.sleep(d7ihPart.getRefreshInterval());
         assert (!d7ihPart.isFresh());
 
-        Part d7ihPart2 = partFactory.createPart(new URL("https://github.com/firepick1/FirePick/wiki/D7IH"));
-        for (int i=0; i < 60; i++) {
-            if (d7ihPart2.isResolved()) {
-                break;
-            }
-            Thread.sleep(1000);
-        }
-
-        assertEquals(d7ihPart, d7ihPart2); // cache hit
-        assertEquals(null, d7ihPart2.getRefreshException());
-        assert(d7ihPart2.isResolved());
-        //System.out.println("age:" + d7ihPart2.getAge() + " refreshInterval:" + d7ihPart2.getRefreshInterval());
-        assert(d7ihPart2.isFresh());
+        d7ihPart.refreshAll();
+        assertEquals(partFactory.getMinRefreshInterval(), d7ihPart.getRefreshInterval());
+        assertEquals(null, d7ihPart.getRefreshException());
+        assert(d7ihPart.isResolved());
+        assert(d7ihPart.isFresh());
     }
 
     @Test
@@ -114,7 +110,7 @@ public class PartFactoryTest {
 
     @Test
     public void testCacheExpiration() throws Exception {
-        Ehcache cache = CacheManager.getInstance().getEhcache("org.firepick.firebom.Part");
+        Ehcache cache = CacheManager.getInstance().getEhcache("org.firepick.firebom.part.Part");
         CacheConfiguration configuration = cache.getCacheConfiguration();
         long idleTime = configuration.getTimeToIdleSeconds();
         long liveTime = configuration.getTimeToLiveSeconds();

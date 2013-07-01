@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.bom;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,16 +21,31 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-public class ProxyResolutionException extends RuntimeException {
-    public ProxyResolutionException(Exception e) {
-        super(e);
+import org.firepick.firebom.IPartComparable;
+import org.firepick.firebom.bom.BOMRow;
+import org.firepick.relation.IRow;
+
+import java.util.Iterator;
+
+public class BOMRowIterator implements Iterator<IRow> {
+    private Iterator<IPartComparable> iterator;
+
+    public BOMRowIterator(Iterator<IPartComparable> iterator) {
+        this.iterator = iterator;
     }
 
-    public ProxyResolutionException(String message) {
-        super(message);
+    @Override
+    public boolean hasNext() {
+        return iterator.hasNext();
     }
 
-    public ProxyResolutionException(String message, Exception e) {
-        super(message, e);
+    @Override
+    public IRow next() {
+        return (BOMRow) iterator.next();
+    }
+
+    @Override
+    public void remove() {
+        iterator.remove();
     }
 }

@@ -1,8 +1,8 @@
 package org.firepick.firebom.rest;
 
 import org.firepick.firebom.Main;
-import org.firepick.firebom.Part;
-import org.firepick.firebom.PartFactory;
+import org.firepick.firebom.part.Part;
+import org.firepick.firebom.part.PartFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

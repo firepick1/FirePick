@@ -1062,7 +1062,7 @@ Here is an example of CacheManager level resource tuning, which will use up to 4
     </cache>
     -->
 
-    <cache name="org.firepick.firebom.Part"
+    <cache name="org.firepick.firebom.part.Part"
            maxEntriesLocalHeap="10000"
          maxEntriesLocalDisk="1000000"
         eternal="false"

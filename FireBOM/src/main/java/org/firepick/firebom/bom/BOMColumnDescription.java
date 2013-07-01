@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.bom;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -26,8 +26,6 @@ import org.firepick.relation.*;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BOMColumnDescription<T> extends ColumnDescription<T> {
 

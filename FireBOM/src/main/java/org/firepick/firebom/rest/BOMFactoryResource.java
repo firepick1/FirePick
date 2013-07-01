@@ -1,8 +1,9 @@
 package org.firepick.firebom.rest;
 
-import org.firepick.firebom.BOM;
-import org.firepick.firebom.BOMFactory;
+import org.firepick.firebom.bom.BOM;
+import org.firepick.firebom.bom.BOMFactory;
 import org.firepick.firebom.Main;
+import org.firepick.firebom.bom.HtmlRowVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 @Path("/build")
@@ -23,14 +25,20 @@ public class BOMFactoryResource {
 
     @GET
     @Produces("text/html; charset=UTF-8")
-    public String createBOM(@QueryParam("url") String url) throws IOException, InterruptedException {
+    public String createBOM(@QueryParam("url") String urlString) throws IOException, InterruptedException {
         BOMFactory bomFactory = new BOMFactory();
-        BOM bom = bomFactory.createBOM(new URL(url));
+        URL url;
+        try {
+            url = new URL(urlString);
+        } catch(MalformedURLException e) {
+            url = new URL("http://" + urlString);
+        }
+        BOM bom = bomFactory.createBOM(url);
 
         ByteArrayOutputStream bosHtml = new ByteArrayOutputStream();
         PrintStream psHtml = new PrintStream(bosHtml);
         InputStream is;
-        logger.info("{} {}", request.getContextPath(), request.getServletPath());
+        logger.info("createBOM {}", urlString);
         if (request.getContextPath().contains("/firebom")) {
             is = Main.class.getResourceAsStream("/index.html");
         } else {
@@ -38,14 +46,14 @@ public class BOMFactoryResource {
         }
         InputStreamReader isr = new InputStreamReader(is);
         bomFactory.setOutputType(BOMFactory.OutputType.HTML_TABLE);
+        HtmlRowVisitor rowVisitor = new HtmlRowVisitor();
         BufferedReader br = new BufferedReader(isr);
         while (br.ready()) {
             String line = br.readLine();
             if (line.contains("<!--BOM-->")) {
-                boolean isResolved = bom.isResolved();
-                bomFactory.printBOM(psHtml, bom);
-                psHtml.println("<script>$('#url').val('" + url + "')</script>");
-                if (isResolved) {
+                bomFactory.printBOM(psHtml, bom, rowVisitor);
+                psHtml.println("<script>$('#url').val('" + urlString + "')</script>");
+                if (rowVisitor.isResolved()) {
                     psHtml.print("<div class='firebom_copylink'>");
                     psHtml.print("<button type='button' onclick='copyLink()'>");
                     psHtml.print("Link this <img style='position:relative;top:2px;' src='http://upload.wikimedia.org/wikipedia/commons/4/45/FireBOM.JPG' height=12px/>");

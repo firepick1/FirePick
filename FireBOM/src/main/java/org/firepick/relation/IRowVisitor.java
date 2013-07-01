@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.relation;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,13 +21,6 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-public class ApplicationLimitsException extends ProxyResolutionException {
-    public ApplicationLimitsException(String message) {
-        super(message);
-    }
-
-    @SuppressWarnings("unused")
-    public ApplicationLimitsException(String message, Exception e) {
-        super(message, e);
-    }
+public interface IRowVisitor {
+    void visit(IRow row);
 }

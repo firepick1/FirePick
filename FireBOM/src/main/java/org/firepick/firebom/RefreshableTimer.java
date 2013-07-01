@@ -28,7 +28,6 @@ import java.io.Serializable;
  * Timer adapts the expected refresh interval based on past refresh() and sample() calls.
  */
 public class RefreshableTimer implements IRefreshableProxy, Serializable {
-    private Long refreshInterval;
     private long minRefreshInterval;
     private long lastRefreshMillis;
     private long lastSampleMillis;
@@ -96,15 +95,8 @@ public class RefreshableTimer implements IRefreshableProxy, Serializable {
     }
 
     public long getRefreshInterval() {
-        Long value = refreshInterval;
-        if (refreshInterval == null)  {
-            value = getSampleInterval();
-        }
+        Long value  = getSampleInterval();
         return Math.max(getMinRefreshInterval(), value);
-    }
-
-    public void setRefreshInterval(Long milliseconds) {
-        this.refreshInterval = milliseconds;
     }
 
     public long getSampleInterval() {

@@ -32,7 +32,7 @@ public class RelationPrinter {
     private boolean printTotalRow = true;
     private boolean printTitleRow = true;
 
-    public RelationPrinter print(IRelation relation, PrintStream printStream) {
+    public RelationPrinter print(IRelation relation, PrintStream printStream, IRowVisitor rowVisitor) {
         if (columnDescriptionList.size() == 0) {
             columnDescriptionList = new ArrayList<IColumnDescription>(relation.describeColumns());
         }
@@ -41,19 +41,19 @@ public class RelationPrinter {
             printColumnTitles(printStream, relation);
         }
         synchronized (columnDescriptionList) {
-            printRows(relation, printStream);
+            printRows(relation, printStream, rowVisitor);
         }
         return this;
     }
 
-    private void printRows(IRelation relation, PrintStream printStream) {
+    private void printRows(IRelation relation, PrintStream printStream, IRowVisitor rowVisitor) {
         for (IColumnDescription columnDescription : columnDescriptionList) {
             columnDescription.getAggregator().clear();
         }
 
         int iRow = 1;
         for (IRow row : relation) {
-            printRow(printStream, row, iRow++);
+            printRow(printStream, row, iRow++, rowVisitor);
         }
 
         if (printTotalRow) {
@@ -73,7 +73,11 @@ public class RelationPrinter {
         printStream.println();
     }
 
-    protected void printRow(PrintStream printStream, IRow row, int iRow) {
+    protected void printRow(PrintStream printStream, IRow row, int iRow, IRowVisitor rowVisitor) {
+        if (rowVisitor != null) {
+            rowVisitor.visit(row);
+        }
+
         int columns = 0;
         for (IColumnDescription columnDescription : columnDescriptionList) {
             if (columns++ > 0) {

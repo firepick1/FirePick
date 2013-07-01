@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.bom;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -23,6 +23,7 @@ package org.firepick.firebom;
 
 import org.firepick.relation.IRelation;
 import org.firepick.relation.IRow;
+import org.firepick.relation.IRowVisitor;
 import org.firepick.relation.RelationPrinter;
 
 import java.io.PrintStream;
@@ -37,7 +38,7 @@ public class BOMMarkdownPrinter extends RelationPrinter {
     }
 
     @Override
-    public RelationPrinter print(IRelation relation, PrintStream printStream) {
+    public RelationPrinter print(IRelation relation, PrintStream printStream, IRowVisitor rowVisitor) {
         BOM bom = (BOM)  relation;
         printStream.print("#### Bill Of Materials (");
         DecimalFormat currencyFormat = (DecimalFormat) NumberFormat.getCurrencyInstance();
@@ -46,11 +47,11 @@ public class BOMMarkdownPrinter extends RelationPrinter {
         printStream.print(bom.partCount());
         printStream.println(" parts)");
 
-        return super.print(relation, printStream);
+        return super.print(relation, printStream, rowVisitor);
     }
 
     @Override
-    protected void printRow(PrintStream printStream, IRow row, int iRow) {
+    protected void printRow(PrintStream printStream, IRow row, int iRow, IRowVisitor rowVisitor) {
         BOMRow bomRow = (BOMRow) row;
         BOM bom = (BOM) bomRow.getRelation();
         printStream.print(iRow);

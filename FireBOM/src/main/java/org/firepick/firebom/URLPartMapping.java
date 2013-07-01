@@ -21,6 +21,8 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.part.Part;
+
 import java.net.URL;
 import java.util.Map;
 

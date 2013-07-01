@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.bom;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,6 +21,9 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.exception.ProxyResolutionException;
+import org.firepick.firebom.part.Part;
+import org.firepick.firebom.part.PartUsage;
 import org.firepick.relation.IColumnDescription;
 import org.firepick.relation.IRelation;
 import org.firepick.relation.IRow;
@@ -31,7 +34,6 @@ import java.text.Format;
 
 public class BOMRow extends PartUsage implements IRow {
     private static Logger logger = LoggerFactory.getLogger(BOMRow.class);
-
     private BOM bom;
     private boolean isResolved;
 
@@ -44,11 +46,11 @@ public class BOMRow extends PartUsage implements IRow {
         if (!isResolved) {
             Part part = getPart();
             if (!part.isResolved()) {
-                try {
-                    part.refresh();
-                } catch (ProxyResolutionException e) {
-                    logger.warn(part.getUrl().toString(), e);
-                }
+                refreshPart(part);
+            }
+            Part sourcePart = part.getSourcePart();
+            if (sourcePart != null && !sourcePart.isResolved()) {
+                refreshPart(sourcePart);
             }
             if (part.isResolved()) {
                 for (PartUsage partUsage : part.getRequiredParts()) {
@@ -58,6 +60,15 @@ public class BOMRow extends PartUsage implements IRow {
             }
         }
         return isResolved;
+    }
+
+    private void refreshPart(Part part) {
+        try {
+            part.refresh();
+        }
+        catch (ProxyResolutionException e) {
+            logger.warn(part.getUrl().toString(), e);
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.part;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -22,17 +22,16 @@ package org.firepick.firebom;
  */
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-public class ShapewaysPart extends Part  {
-    private static Pattern startId = Pattern.compile("<title>");
-    private static Pattern endId = Pattern.compile(" ");
-    private static Pattern startPrice = Pattern.compile(" <div class=\"price\">\\$");
-    private static Pattern endPrice = Pattern.compile("</div>");
+public class InventablesPart extends Part {
+    private static Pattern startId = Pattern.compile("<label for=\"sample_cart_item_sample_id_[0-9]*\">");
+    private static Pattern endId = Pattern.compile("</label>");
+    private static Pattern startPrice = Pattern.compile("<td>\\$");
+    private static Pattern endPrice = Pattern.compile("</td>");
 
-    public ShapewaysPart(PartFactory partFactory, URL url)  {
+    public InventablesPart(PartFactory partFactory, URL url) {
         super(partFactory, url);
     }
 
@@ -46,10 +45,5 @@ public class ShapewaysPart extends Part  {
         if (id != null) {
             setId(id);
         }
-    }
-
-    @Override
-    public String getVendor() {
-        return "www.shapeways.com";
     }
 }

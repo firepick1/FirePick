@@ -21,6 +21,7 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.bom.BOMFactory;
 import org.junit.Test;
 
 import java.io.*;

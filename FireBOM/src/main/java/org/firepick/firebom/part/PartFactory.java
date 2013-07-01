@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.part;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -24,6 +24,7 @@ package org.firepick.firebom;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import org.firepick.firebom.exception.ProxyResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,7 @@ import java.util.regex.Pattern;
 import static java.util.Locale.US;
 
 public class PartFactory implements Iterable<Part>, Runnable {
+    public static long MIN_REFRESH_INTERVAL = 10000;
     private static Logger logger = LoggerFactory.getLogger(PartFactory.class);
     private static Thread worker;
     private static ConcurrentLinkedQueue<Part> refreshQueue = new ConcurrentLinkedQueue<Part>();
@@ -50,6 +52,7 @@ public class PartFactory implements Iterable<Part>, Runnable {
     private long validationMillis;
     private long urlRequests;
     private long networkRequests;
+    private long minRefreshInterval = MIN_REFRESH_INTERVAL;
 
     protected PartFactory() {
         this(Locale.getDefault());
@@ -108,13 +111,14 @@ public class PartFactory implements Iterable<Part>, Runnable {
             String content = response.toString();
             cacheElement = new Element(url, content);
             getCache("URL-contents").put(cacheElement);
+            logger.info("urlTextContent => ({}B) {}", content.length(), url);
             return content;
         } else {
             if (cacheElement.getObjectValue() instanceof IOException) {
                 logger.info("throwing cached exception for {}", url);
                 throw (IOException) cacheElement.getObjectValue();
             } else {
-                logger.info("returning cached contents for {}", url);
+                logger.info("urlTextContent => (cached) {}", url);
                 return cacheElement.getObjectValue().toString();
             }
         }
@@ -143,19 +147,18 @@ public class PartFactory implements Iterable<Part>, Runnable {
     }
 
     public Part createPart(URL url) {
-        Element cacheElement = getCache("org.firepick.firebom.Part").get(url);
+        Element cacheElement = getCache("org.firepick.firebom.part.Part").get(url);
         Part part = null;
         if (cacheElement == null) {
             String host = url.getHost();
             part = createPartForHost(url, host);
-
             cacheElement = new Element(url, part);
-            getCache("org.firepick.firebom.Part").put(cacheElement);
+            getCache("org.firepick.firebom.part.Part").put(cacheElement);
             refreshQueue.add(part);
         } else {
             part = (Part) cacheElement.getObjectValue();
             part.sample();
-            if (!part.isFresh()) {
+            if (!part.isFresh() && !refreshQueue.contains(part)) {
                 refreshQueue.add(part);
             }
         }
@@ -200,7 +203,7 @@ public class PartFactory implements Iterable<Part>, Runnable {
 
     @Override
     public ListIterator<Part> iterator() {
-        Ehcache cache = getCache("org.firepick.firebom.Part");
+        Ehcache cache = getCache("org.firepick.firebom.part.Part");
         return new CacheIterator(cache);
     }
 
@@ -224,6 +227,15 @@ public class PartFactory implements Iterable<Part>, Runnable {
 
     public long getNetworkRequests() {
         return networkRequests;
+    }
+
+    public long getMinRefreshInterval() {
+        return minRefreshInterval;
+    }
+
+    public PartFactory setMinRefreshInterval(long minRefreshInterval) {
+        this.minRefreshInterval = minRefreshInterval;
+        return this;
     }
 
     public class CacheIterator implements ListIterator<Part> {

@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.bom;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,8 +21,10 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.Main;
 import org.firepick.relation.IRelation;
 import org.firepick.relation.IRow;
+import org.firepick.relation.IRowVisitor;
 import org.firepick.relation.RelationPrinter;
 
 import java.io.*;
@@ -79,9 +81,7 @@ public class BOMHtmlPrinter extends RelationPrinter {
     }
 
     @Override
-    public RelationPrinter print(IRelation relation, PrintStream printStream) {
-        BOM bom = (BOM) relation;
-
+    public BOMHtmlPrinter print(IRelation relation, PrintStream printStream, IRowVisitor rowVisitor) {
         if (printHtmlWrapper) {
             printStream.println("<html>");
             printStream.println("<style>");
@@ -105,7 +105,7 @@ public class BOMHtmlPrinter extends RelationPrinter {
         printStream.print("<th class='firebom_th firebom_longtext'>TITLE</th>");
         printStream.println("</tr>");
 
-        super.print(relation, printStream);
+        super.print(relation, printStream, rowVisitor);
 
         printStream.println("</table>");
 
@@ -134,8 +134,14 @@ public class BOMHtmlPrinter extends RelationPrinter {
     }
 
     @Override
-    protected void printRow(PrintStream printStream, IRow row, int iRow) {
+    protected void printRow(PrintStream printStream, IRow row, int iRow, IRowVisitor rowVisitor) {
         BOMRow bomRow = (BOMRow) row;
+        boolean isRowResolved = bomRow.isResolved();
+        if (rowVisitor != null) {
+            HtmlRowVisitor htmlRowVisitor = (HtmlRowVisitor) rowVisitor;
+            htmlRowVisitor.visit(row);
+            isRowResolved = htmlRowVisitor.isVisitedRowResolved();
+        }
         BOM bom = (BOM) row.getRelation();
         printStream.println("<tr class='firebom_tr'>");
 
@@ -168,8 +174,12 @@ public class BOMHtmlPrinter extends RelationPrinter {
         printStream.print("</a>");
         printStream.println("</td>");
 
-        printStream.print("<td class='firebom_td firebom_longtext'>");
-        if (bomRow.isResolved()) {
+        printStream.print("<td class='firebom_td firebom_longtext");
+        if (bomRow.getPart().getRefreshException() != null) {
+            printStream.print(" firebom_error");
+        }
+        printStream.print("'>");
+        if (isRowResolved) {
             printStream.print(bomRow.getPart().getTitle());
         } else {
             printStream.print("<img src='/firebom/processing.gif' height='20px'>");
@@ -187,4 +197,5 @@ public class BOMHtmlPrinter extends RelationPrinter {
         this.printHtmlWrapper = printHtmlWrapper;
         return this;
     }
+
 }

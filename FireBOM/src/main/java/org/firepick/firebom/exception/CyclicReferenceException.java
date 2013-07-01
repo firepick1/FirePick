@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.exception;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,8 +21,16 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.firebom.part.Part;
+public class CyclicReferenceException extends ProxyResolutionException {
+    public CyclicReferenceException(Exception e) {
+        super(e);
+    }
 
-public interface IPartComparable extends Comparable<IPartComparable> {
-    Part getPart();
+    public CyclicReferenceException(String message) {
+        super(message);
+    }
+
+    public CyclicReferenceException(String message, Exception e) {
+        super(message, e);
+    }
 }

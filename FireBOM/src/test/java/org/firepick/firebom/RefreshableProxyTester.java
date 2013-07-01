@@ -21,6 +21,8 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.exception.ProxyResolutionException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -85,13 +87,13 @@ public class RefreshableProxyTester {
             fail();
         }
         assert(proxy.getAge() > ageBefore);
-        assert (!proxy.isFresh());
-        assert (!proxy.isResolved());
+        assert (proxy.isFresh());
+        assert (proxy.isResolved());
 
         // Sampling has no effect on freshness
         proxy.sample();
-        assert (!proxy.isFresh());
-        assert (!proxy.isResolved());
+        assert (proxy.isFresh());
+        assert (proxy.isResolved());
 
         // proxy ages
         testProxyAge(proxy);

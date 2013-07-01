@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.part;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -20,6 +20,8 @@ package org.firepick.firebom;
     
     For more information about FirePick Software visit http://firepick.org
  */
+
+import org.firepick.firebom.IPartComparable;
 
 import java.io.Serializable;
 

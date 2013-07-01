@@ -1,4 +1,4 @@
-package org.firepick.firebom;
+package org.firepick.firebom.exception;
 /*
     Copyright (C) 2013 Karl Lew <karl@firepick.org>. All rights reserved.
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -21,29 +21,13 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.relation.IRow;
-
-import java.util.Iterator;
-
-public class BOMRowIterator implements Iterator<IRow> {
-    private Iterator<IPartComparable> iterator;
-
-    public BOMRowIterator(Iterator<IPartComparable> iterator) {
-        this.iterator = iterator;
+public class ApplicationLimitsException extends ProxyResolutionException {
+    public ApplicationLimitsException(String message) {
+        super(message);
     }
 
-    @Override
-    public boolean hasNext() {
-        return iterator.hasNext();
-    }
-
-    @Override
-    public IRow next() {
-        return (BOMRow) iterator.next();
-    }
-
-    @Override
-    public void remove() {
-        iterator.remove();
+    @SuppressWarnings("unused")
+    public ApplicationLimitsException(String message, Exception e) {
+        super(message, e);
     }
 }

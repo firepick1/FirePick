@@ -21,6 +21,9 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.bom.BOM;
+import org.firepick.firebom.bom.BOMFactory;
+
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -60,7 +63,7 @@ public class Main {
                     urlCount++;
                     BOM bom = new BOM(url);
                     bom.resolve();
-                    bomFactory.printBOM(printStream, bom);
+                    bomFactory.printBOM(printStream, bom, null);
                 } catch (MalformedURLException e) {
                     return false;
                 }

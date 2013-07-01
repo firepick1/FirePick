@@ -21,21 +21,12 @@ package org.firepick.firebom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.exception.ProxyResolutionException;
 import org.junit.Test;
 
-import java.util.Random;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class RefreshableTimerTest {
-
-    public class MockTimer extends RefreshableTimer {
-        @Override
-        public void refresh() {
-            throw new ProxyResolutionException("test");
-        }
-    }
 
     @Test
     public void testRefreshableTimer() throws InterruptedException {
@@ -83,9 +74,22 @@ public class RefreshableTimerTest {
         assertEquals(100, timer.getRefreshInterval());
 
         timer.refresh();
-        assert(timer.isFresh());
+        assert (timer.isFresh());
         assertEquals(100, timer.getMinRefreshInterval());
         assertEquals(100, timer.getRefreshInterval());
+    }
+
+    public class MockTimer extends RefreshableTimer {
+        @Override
+        public void refresh() {
+            super.refresh();
+            throw new ProxyResolutionException("test");
+        }
+
+        @Override
+        public long getMinRefreshInterval() {
+            return 10000;
+        }
     }
 
 
