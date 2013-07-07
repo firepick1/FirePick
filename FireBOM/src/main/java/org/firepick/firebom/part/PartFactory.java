@@ -49,7 +49,6 @@ public class PartFactory implements Iterable<Part>, Runnable {
     private String accept;
     private String language;
     private String userAgent;
-    private long validationMillis;
     private long urlRequests;
     private long networkRequests;
     private long minRefreshInterval = MIN_REFRESH_INTERVAL;
@@ -59,7 +58,6 @@ public class PartFactory implements Iterable<Part>, Runnable {
     }
 
     protected PartFactory(Locale locale) {
-        setValidationMillis(5000);
         if (locale == US) {
             accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
             language = "en-US,en;q=0.8";
@@ -76,7 +74,7 @@ public class PartFactory implements Iterable<Part>, Runnable {
 
     public List<Part> getRefreshQueue() {
         List<Part> list = new ArrayList<Part>();
-        for (Part part: refreshQueue) {
+        for (Part part : refreshQueue) {
             list.add(part);
         }
         return Collections.unmodifiableList(list);
@@ -86,7 +84,7 @@ public class PartFactory implements Iterable<Part>, Runnable {
         urlRequests++;
         Element cacheElement = getCache("URL-contents").get(url);
         if (cacheElement == null) {
-            StringBuilder response = null;
+            StringBuilder response;
             try {
                 networkRequests++;
                 URLConnection connection = url.openConnection();
@@ -148,7 +146,7 @@ public class PartFactory implements Iterable<Part>, Runnable {
 
     public Part createPart(URL url) {
         Element cacheElement = getCache("org.firepick.firebom.part.Part").get(url);
-        Part part = null;
+        Part part;
         if (cacheElement == null) {
             String host = url.getHost();
             part = createPartForHost(url, host);
@@ -183,18 +181,12 @@ public class PartFactory implements Iterable<Part>, Runnable {
             part = new MisumiPart(this, url);
         } else if ("www.inventables.com".equalsIgnoreCase(host)) {
             part = new InventablesPart(this, url);
+        } else if ("www.amazon.com".equalsIgnoreCase(host)) {
+            part = new AmazonPart(this, url);
         } else {
             part = new HtmlPart(this, url);
         }
         return part;
-    }
-
-    public long getValidationMillis() {
-        return validationMillis;
-    }
-
-    public void setValidationMillis(long validationMillis) {
-        this.validationMillis = validationMillis;
     }
 
     public long getUrlRequests() {

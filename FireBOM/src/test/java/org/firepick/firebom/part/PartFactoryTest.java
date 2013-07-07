@@ -99,6 +99,16 @@ public class PartFactoryTest {
     }
 
     @Test
+    public void testAmazon() throws Exception {
+        new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
+                .testId("B002PY7P4I").testPackageCost(10.00).testPackageUnits(48).testUnitCost(0.2083333333333333)
+                .testTitle("Maxell LR6 AA Cell 48 Pack Box Battery (723443)").getPart();
+        new PartTester(partFactory, "http://www.amazon.com/dp/B000A0PYQK/")
+                .testId("B000A0PYQK").testPackageCost(19.17).testPackageUnits(1).testUnitCost(19.17)
+                .testTitle("Tetra 77855 Whisper Air Pump, 100-Gallon").getPart();
+    }
+
+    @Test
     public void testMcMasterCarr() throws Exception {
         new PartTester(partFactory, "http://www.mcmaster.com/#91290A115")
                 .testId("91290A115").testPackageCost(6.39).testPackageUnits(100).testUnitCost(.0639).testProject("www.mcmaster.com");

@@ -21,7 +21,6 @@ package org.firepick.firebom.part;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
@@ -36,7 +35,7 @@ public class PartTester {
         this.url = new URL(url);
         part = partFactory.createPart(this.url);
         part.refreshAll();
-        assert(part.isFresh());
+        assert (part.isFresh());
     }
 
     public PartTester testId(String id) {
@@ -61,6 +60,11 @@ public class PartTester {
 
     public PartTester testProject(String value) {
         assertEquals(value, part.getProject());
+        return this;
+    }
+
+    public PartTester testTitle(String value) {
+        assertEquals(value, part.getTitle());
         return this;
     }
 

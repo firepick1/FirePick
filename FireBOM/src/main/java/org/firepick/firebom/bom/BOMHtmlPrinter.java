@@ -98,7 +98,7 @@ public class BOMHtmlPrinter extends RelationPrinter {
         printStream.println("<table cellpadding=0 cellspacing=0 class='firebom_table'>");
         printStream.println("<tr class='firebom_tr'>");
         printStream.print("<th class='firebom_th'>#</th>");
-        printStream.print("<th class='firebom_th'>COST</th>");
+        printStream.print("<th class='firebom_th'>UNITCOST</th>");
         printStream.print("<th class='firebom_th'>ID</th>");
         printStream.print("<th class='firebom_th'>QTY</th>");
         printStream.print("<th class='firebom_th'>VENDOR</th>");
