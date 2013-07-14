@@ -36,6 +36,7 @@ public class BOMRow extends PartUsage implements IRow {
     private static Logger logger = LoggerFactory.getLogger(BOMRow.class);
     private BOM bom;
     private boolean isResolved;
+    private boolean isRootRow;
 
     public BOMRow(BOM bom, Part part) {
         this.bom = bom;
@@ -74,6 +75,22 @@ public class BOMRow extends PartUsage implements IRow {
     @Override
     public IRelation getRelation() {
         return bom;
+    }
+
+    @Override
+    public double getCost() {
+        if (isRootRow()) {
+            return getUnitCost();
+        }
+        return super.getCost();
+    }
+
+    public double getUnitCost() {
+        if (isRootRow()) {
+            Double cost = getPart().getSourceUnitCost();
+            return cost == null ? 0 : cost;
+        }
+        return getPart().getUnitCost();
     }
 
     @Override
@@ -128,5 +145,14 @@ public class BOMRow extends PartUsage implements IRow {
 
     public boolean isResolved() {
         return isResolved;
+    }
+
+    public boolean isRootRow() {
+        return isRootRow;
+    }
+
+    public BOMRow setRootRow(boolean rootRow) {
+        isRootRow = rootRow;
+        return this;
     }
 }

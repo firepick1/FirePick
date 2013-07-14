@@ -28,12 +28,12 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 public class AmazonPart extends Part {
-    private static Pattern startPrice = Pattern.compile("\"buyingPrice\":");
-    private static Pattern endPrice = Pattern.compile(",");
-    private static Pattern startTitle = Pattern.compile("<title>Amazon.com: ");
-    private static Pattern endTitle = Pattern.compile(":[^:]*</title>");
-    private static Pattern startUnitCost = Pattern.compile("pricePerUnit\">\\(\\$");
-    private static Pattern endUnitCost = Pattern.compile("/count");
+    private static Pattern startPrice = Pattern.compile("priceLarge\">\\$");
+    private static Pattern endPrice = Pattern.compile("<");
+    private static Pattern startTitle = Pattern.compile("AsinTitle\"\\s*>");
+    private static Pattern endTitle = Pattern.compile("</");
+    private static Pattern startUnitCost = Pattern.compile("actualPriceExtraMessaging\">\\s*<span class=\"pricePerUnit\">\\(\\$", Pattern.MULTILINE);
+    private static Pattern endUnitCost = Pattern.compile("/\\s?count");
 
     public AmazonPart(PartFactory partFactory, URL url)  {
         super(partFactory, url);
@@ -43,6 +43,7 @@ public class AmazonPart extends Part {
     protected void refreshFromRemoteContent(String content) throws IOException {
         String title = PartFactory.getInstance().scrapeText(content, startTitle, endTitle);
         if (title != null) {
+            title = title.replaceAll("Amazon.com:\\s?", "");
             setTitle(title);
         }
         String price = PartFactory.getInstance().scrapeText(content, startPrice, endPrice);

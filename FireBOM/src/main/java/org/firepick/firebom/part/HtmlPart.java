@@ -48,17 +48,27 @@ public class HtmlPart extends Part {
                 if (newSourceList.size() == 0) {
                     throw new ProxyResolutionException("Html page has no @Sources tag");
                 }
-                URL sourceUrl = parseLink(newSourceList.get(0));
+                String primarySource = newSourceList.get(0);
+                URL sourceUrl = parseLink(primarySource);
                 newSourcePart = PartFactory.getInstance().createPart(sourceUrl);
-          //      newSourcePart.refresh();
+                Double quantity = parseQuantity(primarySource, null);
+                if (quantity != null) {
+                    // Package Unit Override
+                    // ======================
+                    // If source package units are specified, they apply to the source, which may not have the ability to
+                    // specify the package units. Using the source package unit override automatically forces a
+                    // package unit of 1 for THIS part. This convention permits the simplest specification of required parts
+                    // (i.e., per single source unit).
+                    setSourcePackageUnits(quantity);
+                    this.setPackageUnits(1d);
+                }
             } else if (ulPart.contains("@Require")) {
                 List<String> requiredItems = parseListItemStrings(ulPart);
                 newRequiredParts = new ArrayList<PartUsage>();
                 for (String required : requiredItems) {
                     URL link = parseLink(required);
-                    double quantity = parseQuantity(required, 1);
+                    double quantity = parseQuantity(required, 1d);
                     Part part = PartFactory.getInstance().createPart(link);
-         //           part.refresh();
                     PartUsage partUsage = new PartUsage().setPart(part).setQuantity(quantity);
                     newRequiredParts.add(partUsage);
                 }
@@ -73,7 +83,6 @@ public class HtmlPart extends Part {
             setSourcePart(newSourcePart);
         }
     }
-
 
 }
 

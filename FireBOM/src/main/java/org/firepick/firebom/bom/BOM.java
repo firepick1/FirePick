@@ -98,6 +98,9 @@ public class BOM implements IRelation, IRefreshableProxy {
                 throw new ApplicationLimitsException("Maximum part limit exceeded: " + maximumParts);
             }
             bomRow = new BOMRow(this, part);
+            if (part == rootPart) {
+                bomRow.setRootRow(true);
+            }
             bomRow.setQuantity(quantity);
             rows.add(bomRow);
             logger.debug("addPart({})", part.getUrl());

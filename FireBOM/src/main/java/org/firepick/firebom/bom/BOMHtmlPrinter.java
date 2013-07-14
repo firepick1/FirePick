@@ -165,7 +165,7 @@ public class BOMHtmlPrinter extends RelationPrinter {
         printStream.print("<td class='firebom_td firebom_number'>");
         printStream.print(bom.getColumn(BOMColumn.QUANTITY).getFormat().format(bomRow.getQuantity()));
         printStream.print("@");
-        printStream.print(bom.getColumn(BOMColumn.COST).getFormat().format(bomRow.getPart().getUnitCost()));
+        printStream.print(bom.getColumn(BOMColumn.COST).getFormat().format(bomRow.getUnitCost()));
         printStream.println("</td>");
 
         printStream.print("<td class='firebom_td'>");

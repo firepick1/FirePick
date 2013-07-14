@@ -181,6 +181,8 @@ public class PartFactory implements Iterable<Part>, Runnable {
             part = new MisumiPart(this, url);
         } else if ("www.inventables.com".equalsIgnoreCase(host)) {
             part = new InventablesPart(this, url);
+        } else if ("www.ponoko.com".equalsIgnoreCase(host)) {
+            part = new PonokoPart(this, url);
         } else if ("www.amazon.com".equalsIgnoreCase(host)) {
             part = new AmazonPart(this, url);
         } else {

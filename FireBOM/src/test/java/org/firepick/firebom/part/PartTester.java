@@ -53,6 +53,11 @@ public class PartTester {
         return this;
     }
 
+    public PartTester testSourceUnitCost(double value) {
+        assertEquals(value, part.getSourceUnitCost(), .005d);
+        return this;
+    }
+
     public PartTester testPackageUnits(double value) {
         assertEquals(value, part.getPackageUnits(), 0.005d);
         return this;

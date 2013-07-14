@@ -49,6 +49,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
 
     protected List<String> sourceList;
     protected List<PartUsage> requiredParts;
+    protected Double sourcePackageUnits;
     private Part sourcePart;
     private String id;
     private String title;
@@ -119,11 +120,14 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         if (packageCost == null) {
             if (sourcePart != null && sourcePart.isResolved()) {
                 cost = sourcePart.getUnitCost(); // for abstract parts, the package cost is the unit cost
-                logger.debug("packagetCost {} += {}", id, cost);
+                if (sourcePackageUnits != null) {
+                    cost /= getSourcePackageUnits();
+                }
+                logger.debug("packageCost {} += {}", id, cost);
             }
             for (PartUsage partUsage : requiredParts) {
                 double partCost = partUsage.getQuantity() * partUsage.getPart().getUnitCost();
-                logger.debug("packagetCost {} += {} {}", new Object[]{id, partUsage.getPart().getId(), partCost});
+                logger.debug("packageCost {} += {} {}", new Object[]{id, partUsage.getPart().getId(), partCost});
                 cost += partCost;
             }
         } else {
@@ -177,13 +181,18 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         return new URL(getUrl(), url);
     }
 
-    protected double parseQuantity(String value, double defaultValue) {
-        double result = defaultValue;
+    protected Double parseQuantity(String value, Double defaultValue) {
+        Double result = defaultValue;
 
         String[] phrases = value.split("\\(");
         if (phrases.length > 1) {
             String quantity = phrases[phrases.length - 1].split("\\)")[0];
-            result = Double.parseDouble(quantity);
+            try {
+                result = Double.parseDouble(quantity);
+            }
+            catch (NumberFormatException e) {
+                // parenthetical text, not a quantity
+            }
         }
 
         return result;
@@ -403,5 +412,24 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
 
     public void setMinRefeshInterval(long minRefeshInterval) {
         refreshableTimer.setMinRefreshInterval(minRefeshInterval);
+    }
+
+    public Double getSourcePackageUnits() {
+        return sourcePackageUnits;
+    }
+
+    public Double getSourceUnitCost() {
+        if (sourcePart == null) {
+            return null;
+        }
+        double cost = sourcePart.getUnitCost();
+        if (sourcePackageUnits != null) {
+            cost /= sourcePackageUnits;
+        }
+        return cost;
+    }
+
+    public void setSourcePackageUnits(Double sourcePackageUnits) {
+        this.sourcePackageUnits = sourcePackageUnits;
     }
 }

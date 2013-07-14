@@ -70,8 +70,8 @@ public class PartFactoryTest {
         d7ihPart.refreshAll();
         assertEquals(partFactory.getMinRefreshInterval(), d7ihPart.getRefreshInterval());
         assertEquals(null, d7ihPart.getRefreshException());
-        assert(d7ihPart.isResolved());
-        assert(d7ihPart.isFresh());
+        assert (d7ihPart.isResolved());
+        assert (d7ihPart.isFresh());
     }
 
     @Test
@@ -100,12 +100,27 @@ public class PartFactoryTest {
 
     @Test
     public void testAmazon() throws Exception {
+        // Amazon prices fluctuate wildly, so expect the following to fail.
+        // Just update the prices and commit to GitHub
+
+        new PartTester(partFactory, "http://www.amazon.com/Bearing-Shielded-Miniature-Bearings-VXB/dp/B002BBIC6K")
+                .testId("B002BBIC6K").testPackageCost(25.05).testPackageUnits(1).testUnitCost(25.05)
+                .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
-                .testId("B002PY7P4I").testPackageCost(10.00).testPackageUnits(48).testUnitCost(0.2083333333333333)
+                .testId("B002PY7P4I").testPackageCost(15.95).testPackageUnits(48).testUnitCost(0.33229166666666665)
                 .testTitle("Maxell LR6 AA Cell 48 Pack Box Battery (723443)").getPart();
         new PartTester(partFactory, "http://www.amazon.com/dp/B000A0PYQK/")
-                .testId("B000A0PYQK").testPackageCost(19.17).testPackageUnits(1).testUnitCost(19.17)
+                .testId("B000A0PYQK").testPackageCost(20.17).testPackageUnits(1).testUnitCost(20.17)
                 .testTitle("Tetra 77855 Whisper Air Pump, 100-Gallon").getPart();
+    }
+
+    @Test
+    public void testPonoko() throws Exception {
+        new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/A3B1")
+                .testId("A3B1").testPackageCost(2.2524).testPackageUnits(1).testUnitCost(2.2524).testSourceUnitCost(1)
+                .testRequiredParts(3).testProject("FirePick");
+        new PartTester(partFactory, "http://www.ponoko.com/design-your-own/products/a3b1-10268")
+                .testId("a3b1-10268").testPackageCost(12.00).testPackageUnits(1).testUnitCost(12).testUnitCost(12);
     }
 
     @Test
@@ -144,8 +159,8 @@ public class PartFactoryTest {
         PartTester tester = new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH");
         tester.testId("D7IH");
         tester.testRequiredParts(5);
-        tester.testUnitCost(11.6698).testPackageCost(11.6698).testPackageUnits(1);
-        tester.testRequiredPart(0, "DB16", 1, 1.50)
+        tester.testUnitCost(11.422299999999998).testPackageCost(11.422299999999998).testPackageUnits(1);
+        tester.testRequiredPart(0, "DB16", 1, 1.2525)
                 .testRequiredPart(1, "F525", 1, 0.11)
                 .testRequiredPart(2, "F510", 1, 0.0793)
                 .testRequiredPart(3, "F50N", 1, 0.0173)
