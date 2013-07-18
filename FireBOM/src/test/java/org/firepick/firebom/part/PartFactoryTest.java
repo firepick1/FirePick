@@ -26,6 +26,8 @@ import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
 import org.firepick.firebom.RefreshableProxyTester;
+import org.firepick.firebom.bom.BOM;
+import org.firepick.firebom.bom.BOMRow;
 import org.firepick.firebom.exception.ProxyResolutionException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -84,6 +86,13 @@ public class PartFactoryTest {
 
     @Test
     public void testInventables() throws Exception {
+        Part part = new PartTester(partFactory, "https://www.inventables.com/technologies/makerslide#sample_33331")
+                .testId("25142-08").testPackageCost(9.82).testPackageUnits(1).testUnitCost(9.82)
+                .testTitle("MAKERSLIDE 375mm").getPart();
+        BOM bom = new BOM(new URL("https://www.inventables.com/technologies/makerslide#sample_33331"));
+        bom.resolve();
+        BOMRow bomRow = (BOMRow) bom.iterator().next();
+        assertEquals(9.82d, bomRow.getUnitCost(), .005d);
         new PartTester(partFactory, "https://www.inventables.com/technologies/ball-bearings")
                 .testId("25196-01").testPackageCost(1.5).testPackageUnits(1).testUnitCost(1.5);
     }
@@ -104,14 +113,14 @@ public class PartFactoryTest {
         // Just update the prices and commit to GitHub
 
         new PartTester(partFactory, "http://www.amazon.com/Bearing-Shielded-Miniature-Bearings-VXB/dp/B002BBIC6K")
-                .testId("B002BBIC6K").testPackageCost(25.05).testPackageUnits(1).testUnitCost(25.05)
+                .testId("B002BBIC6K").testPackageCost(24.95).testPackageUnits(1).testUnitCost(24.95)
                 .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
-                .testId("B002PY7P4I").testPackageCost(15.95).testPackageUnits(48).testUnitCost(0.33229166666666665)
+                .testId("B002PY7P4I").testPackageCost(12.16).testPackageUnits(48).testUnitCost(12.16/48)
                 .testTitle("Maxell LR6 AA Cell 48 Pack Box Battery (723443)").getPart();
         new PartTester(partFactory, "http://www.amazon.com/dp/B000A0PYQK/")
                 .testId("B000A0PYQK").testPackageCost(20.17).testPackageUnits(1).testUnitCost(20.17)
-                .testTitle("Tetra 77855 Whisper Air Pump, 100-Gallon").getPart();
+                .testTitle("Tetra Whisper Air Pumps (Non-UL)").getPart();
     }
 
     @Test
@@ -160,7 +169,7 @@ public class PartFactoryTest {
         tester.testId("D7IH");
         tester.testRequiredParts(5);
         tester.testUnitCost(11.422299999999998).testPackageCost(11.422299999999998).testPackageUnits(1);
-        tester.testRequiredPart(0, "DB16", 1, 1.2525)
+        tester.testRequiredPart(0, "DB16", 1, 1.2475)
                 .testRequiredPart(1, "F525", 1, 0.11)
                 .testRequiredPart(2, "F510", 1, 0.0793)
                 .testRequiredPart(3, "F50N", 1, 0.0173)

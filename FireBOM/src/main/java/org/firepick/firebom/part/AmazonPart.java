@@ -54,7 +54,7 @@ public class AmazonPart extends Part {
         if (unitCostStr != null) {
             try {
                 double unitCost = Double.parseDouble(unitCostStr);
-                long units = Math.round(getPackageCost() / unitCost);
+                long units = (long) Math.floor(getPackageCost() / unitCost);
                 setPackageUnits((double) units);
             } catch (Exception e) {
                 // ignore

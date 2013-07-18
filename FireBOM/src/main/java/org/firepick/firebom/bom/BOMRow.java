@@ -87,8 +87,12 @@ public class BOMRow extends PartUsage implements IRow {
 
     public double getUnitCost() {
         if (isRootRow()) {
-            Double cost = getPart().getSourceUnitCost();
-            return cost == null ? 0 : cost;
+            if (getPart().getSourcePart() == null) {
+                return getPart().getUnitCost();
+            } else {
+                Double cost = getPart().getSourceUnitCost();
+                return cost == null ? 0 : cost;
+            }
         }
         return getPart().getUnitCost();
     }
