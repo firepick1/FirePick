@@ -36,7 +36,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,8 +48,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
 
     protected List<String> sourceList;
     protected List<PartUsage> requiredParts;
-    protected Double sourcePackageUnits;
-    private Part sourcePart;
+    private PartUsage sourcePartUsage;
     private String id;
     private String title;
     private String vendor;
@@ -83,8 +81,8 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     public synchronized String getId() {
         String value = id;
         if (value == null) {
-            if (sourcePart != null  && sourcePart.isResolved()) {
-                value = sourcePart.getId();
+            if (sourcePartUsage != null  && sourcePartUsage.getPart().isResolved()) {
+                value = sourcePartUsage.getPart().getId();
             }
         }
         if (value == null && getRefreshException() != null) {
@@ -108,21 +106,18 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     }
 
     public synchronized URL getSourceUrl() {
-        if (sourcePart == null) {
+        if (sourcePartUsage == null) {
             return url;
         }
-        return sourcePart.getUrl();
+        return sourcePartUsage.getPart().getUrl();
     }
 
     public synchronized double getPackageCost() {
         double cost = 0;
 
         if (packageCost == null) {
-            if (sourcePart != null && sourcePart.isResolved()) {
-                cost = sourcePart.getUnitCost(); // for abstract parts, the package cost is the unit cost
-                if (sourcePackageUnits != null) {
-                    cost /= getSourcePackageUnits();
-                }
+            if (sourcePartUsage != null && sourcePartUsage.getPart().isResolved()) {
+                cost = sourcePartUsage.getCost();
                 logger.debug("packageCost {} += {}", id, cost);
             }
             for (PartUsage partUsage : requiredParts) {
@@ -145,7 +140,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     public synchronized double getPackageUnits() {
         double units = 1;
         if (packageUnits == null) {
-            if (sourcePart != null) {
+            if (sourcePartUsage != null) {
                 units = 1; // this part is abstract, so package units is always 1
             }
         } else {
@@ -188,7 +183,14 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         if (phrases.length > 1) {
             String quantity = phrases[phrases.length - 1].split("\\)")[0];
             try {
-                result = Double.parseDouble(quantity);
+                String [] fraction = quantity.split("/");
+                if (fraction.length > 1) {
+                    double numerator = Double.parseDouble(fraction[0]);
+                    double denominator = Double.parseDouble(fraction[1]);
+                    result = numerator/denominator;
+                } else {
+                    result = Double.parseDouble(quantity);
+                }
             }
             catch (NumberFormatException e) {
                 // parenthetical text, not a quantity
@@ -203,8 +205,8 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         if (value == null) {
             if (getRefreshException() != null) {
                 value = getRefreshException().getMessage();
-            } else if (sourcePart != null && sourcePart.isResolved()) {
-                value = sourcePart.getTitle();
+            } else if (sourcePartUsage != null && sourcePartUsage.getPart().isResolved()) {
+                value = sourcePartUsage.getPart().getTitle();
             } else {
                 value = getId();
             }
@@ -232,8 +234,8 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
 
     public synchronized String getVendor() {
         if (vendor == null) {
-            if (sourcePart != null && sourcePart.isResolved()) {
-                return sourcePart.getVendor();
+            if (sourcePartUsage != null && sourcePartUsage.getPart().isResolved()) {
+                return sourcePartUsage.getVendor();
             } else {
                 return getUrl().getHost();
             }
@@ -257,6 +259,28 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     public synchronized Part setProject(String project) {
         this.project = project;
         return this;
+    }
+
+    /**
+     * A simple assembly that consists solely of its constituent required parts.
+     * Simple asseblies have no individual cost.
+     * @return true if this is an assembly
+     */
+    public boolean isAssembly() {
+        return requiredParts.size() > 0;
+    }
+
+    public boolean isVendorPart() {
+        return sourcePartUsage == null && requiredParts.size() == 0;
+    }
+
+    /**
+     * An abstract part is one that defines the function of a part and
+     * provides one or more sources for that part. Think of this as a "hardware interface or api"
+     * @return
+     */
+    public boolean isAbstractPart() {
+        return sourcePartUsage != null;
     }
 
     @Override
@@ -295,7 +319,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         // The refresh exception may be temporary, so the proxy is treated as "fresh and resolved with error"
         isResolved = true;
         sourceList = null;
-        sourcePart = null;
+        sourcePartUsage = null;
         requiredParts.clear();
         refreshableTimer.refresh();
 
@@ -308,8 +332,8 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
             Part part = partUsage.getPart();
             part.refreshAll();
         }
-        if (sourcePart != null) {
-            sourcePart.refresh();
+        if (sourcePartUsage != null) {
+            sourcePartUsage.getPart().refresh();
         }
         refresh();
 
@@ -323,8 +347,8 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         } else if (rootPart == null) {
             rootPart = part;
         }
-        if (part.sourcePart != null) {
-            validate(part.sourcePart, rootPart);
+        if (part.sourcePartUsage != null) {
+            validate(part.sourcePartUsage.getPart(), rootPart);
         }
         for (PartUsage partUsage : part.requiredParts) {
             validate(partUsage.getPart(), rootPart);
@@ -351,8 +375,8 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
             return false;
         }
         if (deep) {
-            if (sourcePart != null && !sourcePart.isFresh()) {
-                logger.info("stale2 {}", sourcePart.getUrl());
+            if (sourcePartUsage != null && !sourcePartUsage.getPart().isFresh()) {
+                logger.info("stale2 {}", sourcePartUsage.getPart().getUrl());
                 return false;
             }
             for (PartUsage partUsage : requiredParts) {
@@ -385,12 +409,19 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         return getId() + " " + getUrl().toString();
     }
 
-    public synchronized Part getSourcePart() {
-        return sourcePart;
+    public Part getSourcePart() {
+        if (sourcePartUsage == null) {
+            return null;
+        }
+        return sourcePartUsage.getPart();
     }
 
-    public synchronized Part setSourcePart(Part sourcePart) {
-        this.sourcePart = sourcePart;
+    public synchronized PartUsage getSourcePartUsage() {
+        return sourcePartUsage;
+    }
+
+    public synchronized Part setSourcePartUsage(PartUsage sourcePartUsage) {
+        this.sourcePartUsage = sourcePartUsage;
         return this;
     }
 
@@ -402,10 +433,6 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         this.refreshException = refreshException;
     }
 
-    public boolean isResolved() {
-        return isResolved;
-    }
-
     public long getMinRefeshInterval() {
         return refreshableTimer.getMinRefreshInterval();
     }
@@ -414,22 +441,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         refreshableTimer.setMinRefreshInterval(minRefeshInterval);
     }
 
-    public Double getSourcePackageUnits() {
-        return sourcePackageUnits;
-    }
-
-    public Double getSourceUnitCost() {
-        if (sourcePart == null) {
-            return null;
-        }
-        double cost = sourcePart.getUnitCost();
-        if (sourcePackageUnits != null) {
-            cost /= sourcePackageUnits;
-        }
-        return cost;
-    }
-
-    public void setSourcePackageUnits(Double sourcePackageUnits) {
-        this.sourcePackageUnits = sourcePackageUnits;
+    public boolean isResolved() {
+        return isResolved;
     }
 }

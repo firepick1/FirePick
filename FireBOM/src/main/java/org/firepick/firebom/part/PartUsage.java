@@ -30,6 +30,13 @@ public class PartUsage implements Serializable, IPartComparable {
     private double quantity;
     private String vendor;
 
+    public PartUsage(Part part, double quantity) {
+        setPart(part);
+        addQuantity(quantity);
+    }
+
+    public PartUsage() {}
+
     public Part getPart() {
         return part;
     }
@@ -43,13 +50,18 @@ public class PartUsage implements Serializable, IPartComparable {
         return quantity;
     }
 
-    public PartUsage setQuantity(double quantity) {
-        this.quantity = quantity;
+    public synchronized PartUsage addQuantity(double quantity) {
+        double oldQuantity = this.quantity;
+        this.quantity = oldQuantity + quantity;
         return this;
     }
 
     public double getCost() {
-        return quantity * part.getUnitCost();
+        return getQuantity() * getUnitCost();
+    }
+
+    public double getUnitCost() {
+        return part.getUnitCost();
     }
 
     public String getVendor() {

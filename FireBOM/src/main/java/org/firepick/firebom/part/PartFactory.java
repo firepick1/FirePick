@@ -185,10 +185,27 @@ public class PartFactory implements Iterable<Part>, Runnable {
             part = new PonokoPart(this, url);
         } else if ("www.amazon.com".equalsIgnoreCase(host)) {
             part = new AmazonPart(this, url);
+        } else if ("mock".equalsIgnoreCase(host)) {
+            part = new MockPart(this, url);
         } else {
             part = new HtmlPart(this, url);
         }
         return part;
+    }
+
+    public static int estimateQuantity(double packageCost, double unitCost) {
+        double highCost = unitCost + .005;
+        double lowCost = unitCost - .005;
+        int highQuantity = (int) Math.floor(packageCost / lowCost);
+        int lowQuantity = (int) Math.ceil(packageCost / highCost);
+
+        if (highQuantity == lowQuantity) {
+            return highQuantity;
+        }
+        if (highQuantity == lowQuantity + 1) {
+            return highQuantity % 2 == 0 ? highQuantity : lowQuantity; // even number is more likely
+        }
+        return (int) Math.round(packageCost/unitCost);
     }
 
     public long getUrlRequests() {

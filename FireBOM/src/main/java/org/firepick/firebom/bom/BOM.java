@@ -62,6 +62,10 @@ public class BOM implements IRelation, IRefreshableProxy {
         addPart(rootPart, 1);
     }
 
+    public String getId() {
+        return rootPart.getId();
+    }
+
     @Override
     public List<IColumnDescription> describeColumns() {
         return Collections.unmodifiableList(columnDescriptions);
@@ -92,16 +96,13 @@ public class BOM implements IRelation, IRefreshableProxy {
     protected BOMRow addPart(Part part, double quantity) {
         BOMRow bomRow = lookup(part);
         if (bomRow != null) {
-            bomRow.setQuantity(bomRow.getQuantity() + quantity);
+            bomRow.addQuantity(quantity);
         } else {
             if (maximumParts > 0 && rows.size() >= maximumParts) {
                 throw new ApplicationLimitsException("Maximum part limit exceeded: " + maximumParts);
             }
             bomRow = new BOMRow(this, part);
-            if (part == rootPart) {
-                bomRow.setRootRow(true);
-            }
-            bomRow.setQuantity(quantity);
+            bomRow.addQuantity(quantity);
             rows.add(bomRow);
             logger.debug("addPart({})", part.getUrl());
         }
@@ -170,6 +171,16 @@ public class BOM implements IRelation, IRefreshableProxy {
         return this;
     }
 
+    public BOMRow item(int index) {
+        int curIndex = 0;
+        for (IRow row : this) {
+            if (curIndex++ == index) {
+                return (BOMRow) row;
+            }
+        }
+        return null;
+    }
+
     public boolean isResolved() {
         for (IPartComparable partComparable : rows) {
             BOMRow bomRow = (BOMRow) partComparable;
@@ -185,13 +196,25 @@ public class BOM implements IRelation, IRefreshableProxy {
         return refreshableTimer.getAge();
     }
 
-    public boolean resolve() {
-        if (!isResolved()) {
+    public boolean resolve(long timeoutMillis) {
+        long msStart = System.currentTimeMillis();
+        while (!isResolved()) {
+            ArrayList<BOMRow> simpleAssemblies = new ArrayList<BOMRow>();
             for (IPartComparable partComparable : rows) {
                 BOMRow bomRow = (BOMRow) partComparable;
-                bomRow.resolve();
+                if (bomRow.resolve()) {
+                    Part part = bomRow.getPart();
+                    if (!part.isAbstractPart() && part.isAssembly()) {
+                        simpleAssemblies.add(bomRow);
+                    }
+                }
+            }
+            rows.removeAll(simpleAssemblies);
+            if (System.currentTimeMillis() - msStart > timeoutMillis) {
+                break;
             }
         }
+
         if (rootPart != null && rootPart.isResolved()) {
             setTitle(rootPart.getTitle());
         }

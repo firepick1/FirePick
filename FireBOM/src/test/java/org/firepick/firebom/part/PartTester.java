@@ -48,13 +48,13 @@ public class PartTester {
         return this;
     }
 
-    public PartTester testPackageCost(double value) {
-        assertEquals(value, part.getPackageCost(), .005d);
+    public PartTester testPackageCost(double value, double tolerance) {
+        assertEquals(value, part.getPackageCost(), tolerance);
         return this;
     }
 
-    public PartTester testSourceUnitCost(double value) {
-        assertEquals(value, part.getSourceUnitCost(), .005d);
+    public PartTester testSourceCost(double value) {
+        assertEquals(value, part.getSourcePartUsage().getCost(), .005d);
         return this;
     }
 

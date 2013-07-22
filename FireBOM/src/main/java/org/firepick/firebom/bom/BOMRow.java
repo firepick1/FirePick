@@ -34,16 +34,17 @@ import java.text.Format;
 
 public class BOMRow extends PartUsage implements IRow {
     private static Logger logger = LoggerFactory.getLogger(BOMRow.class);
+
     private BOM bom;
     private boolean isResolved;
-    private boolean isRootRow;
+    private boolean isPartsAdded;
 
     public BOMRow(BOM bom, Part part) {
         this.bom = bom;
         setPart(part);
     }
 
-    public boolean resolve() {
+    public synchronized boolean resolve() {
         if (!isResolved) {
             Part part = getPart();
             if (!part.isResolved()) {
@@ -53,7 +54,8 @@ public class BOMRow extends PartUsage implements IRow {
             if (sourcePart != null && !sourcePart.isResolved()) {
                 refreshPart(sourcePart);
             }
-            if (part.isResolved()) {
+            if (part.isResolved() && !isPartsAdded) {
+                isPartsAdded = true;
                 for (PartUsage partUsage : part.getRequiredParts()) {
                     bom.addPart(partUsage.getPart(), partUsage.getQuantity() * getQuantity());
                 }
@@ -78,23 +80,17 @@ public class BOMRow extends PartUsage implements IRow {
     }
 
     @Override
-    public double getCost() {
-        if (isRootRow()) {
-            return getUnitCost();
-        }
-        return super.getCost();
-    }
-
     public double getUnitCost() {
-        if (isRootRow()) {
-            if (getPart().getSourcePart() == null) {
-                return getPart().getUnitCost();
-            } else {
-                Double cost = getPart().getSourceUnitCost();
-                return cost == null ? 0 : cost;
-            }
+        Part part = getPart();
+        if (part.isAbstractPart()) {
+            return part.getSourcePartUsage().getCost();
+        } else if (part.isVendorPart()) {
+            return part.getUnitCost();
+        } else if (isResolved()) {
+            throw new UnsupportedOperationException("Expected abstract part or vendor part:" + part.getUrl());
         }
-        return getPart().getUnitCost();
+
+        return 0;
     }
 
     @Override
@@ -151,12 +147,4 @@ public class BOMRow extends PartUsage implements IRow {
         return isResolved;
     }
 
-    public boolean isRootRow() {
-        return isRootRow;
-    }
-
-    public BOMRow setRootRow(boolean rootRow) {
-        isRootRow = rootRow;
-        return this;
-    }
 }

@@ -39,9 +39,8 @@ public class HtmlPart extends Part {
     protected void refreshFromRemoteContent(String content) throws IOException {
         String[] ulParts = content.split("</ul>");
         List<String> newSourceList = null;
-        Part newSourcePart = null;
+        PartUsage newSourcePartUsage = null;
         List<PartUsage> newRequiredParts = null;
-
         for (String ulPart : ulParts) {
             if (ulPart.contains("@Source")) {
                 newSourceList = parseListItemStrings(ulPart);
@@ -50,7 +49,7 @@ public class HtmlPart extends Part {
                 }
                 String primarySource = newSourceList.get(0);
                 URL sourceUrl = parseLink(primarySource);
-                newSourcePart = PartFactory.getInstance().createPart(sourceUrl);
+                Part sourcePart = PartFactory.getInstance().createPart(sourceUrl);
                 Double quantity = parseQuantity(primarySource, null);
                 if (quantity != null) {
                     // Package Unit Override
@@ -59,8 +58,10 @@ public class HtmlPart extends Part {
                     // specify the package units. Using the source package unit override automatically forces a
                     // package unit of 1 for THIS part. This convention permits the simplest specification of required parts
                     // (i.e., per single source unit).
-                    setSourcePackageUnits(quantity);
+                    newSourcePartUsage = new PartUsage(sourcePart, quantity);
                     this.setPackageUnits(1d);
+                } else {
+                    newSourcePartUsage = new PartUsage(sourcePart, 1);
                 }
             } else if (ulPart.contains("@Require")) {
                 List<String> requiredItems = parseListItemStrings(ulPart);
@@ -69,7 +70,7 @@ public class HtmlPart extends Part {
                     URL link = parseLink(required);
                     double quantity = parseQuantity(required, 1d);
                     Part part = PartFactory.getInstance().createPart(link);
-                    PartUsage partUsage = new PartUsage().setPart(part).setQuantity(quantity);
+                    PartUsage partUsage = new PartUsage(part, quantity);
                     newRequiredParts.add(partUsage);
                 }
             }
@@ -78,9 +79,9 @@ public class HtmlPart extends Part {
         if (newRequiredParts != null) {
             requiredParts = newRequiredParts;
         }
-        if (newSourcePart != null) {
+        if (newSourcePartUsage != null) {
             sourceList = newSourceList;
-            setSourcePart(newSourcePart);
+            setSourcePartUsage(newSourcePartUsage);
         }
     }
 

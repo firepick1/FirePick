@@ -61,7 +61,7 @@ public class BOMHtmlPrinter extends RelationPrinter {
         printStream.print(bom.getColumn(BOMColumn.COST).getFormat().format(bom.totalCost()));
         printStream.println("</td>");
 
-        printStream.print("<td class='firebom_td firebom_blanktotal'>");
+        printStream.print("<td class='firebom_td firebom_total'>");
         printStream.print("&nbsp;");
         printStream.println("</td>");
 
@@ -69,7 +69,7 @@ public class BOMHtmlPrinter extends RelationPrinter {
         printStream.print(bom.getColumn(BOMColumn.QUANTITY).getFormat().format(bom.partCount()));
         printStream.println("</td>");
 
-        printStream.print("<td class='firebom_td  firebom_blanktotal'>");
+        printStream.print("<td class='firebom_td  firebom_total'>");
         printStream.print("&nbsp;");
         printStream.println("</td>");
 
@@ -82,6 +82,8 @@ public class BOMHtmlPrinter extends RelationPrinter {
 
     @Override
     public BOMHtmlPrinter print(IRelation relation, PrintStream printStream, IRowVisitor rowVisitor) {
+        BOM bom = (BOM) relation;
+
         if (printHtmlWrapper) {
             printStream.println("<html>");
             printStream.println("<style>");
@@ -91,6 +93,11 @@ public class BOMHtmlPrinter extends RelationPrinter {
         }
         if (title != null) {
             printStream.print("<h3 class='firebom_H3'>");
+            printStream.print("<a href='");
+            printStream.print(bom.getRootPart().getUrl());
+            printStream.print("'>");
+            printStream.print(bom.getRootPart().getId());
+            printStream.print("</a>: ");
             printStream.print(title);
             printStream.println("</h3>");
         }

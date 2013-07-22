@@ -62,7 +62,7 @@ public class Main {
                     URL url = new URL(arg);
                     urlCount++;
                     BOM bom = new BOM(url);
-                    bom.resolve();
+                    bom.resolve(0);
                     bomFactory.printBOM(printStream, bom, null);
                 } catch (MalformedURLException e) {
                     return false;

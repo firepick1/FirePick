@@ -50,7 +50,7 @@ public class PartUsageTest {
     private void testPartOrder(Part part1, Part part2) {
         PartUsage partUsage1 = new PartUsage().setPart(part1);
         PartUsage partUsage2 = new PartUsage().setPart(part2);
-        PartUsage partUsage1_2 = new PartUsage().setPart(part1).setQuantity(2);
+        PartUsage partUsage1_2 = new PartUsage(part1, 2);
 
         assertEquals(-1, (int) Math.signum(part1.compareTo(part2)));
         assertEquals(1, (int) Math.signum(part2.compareTo(part1)));

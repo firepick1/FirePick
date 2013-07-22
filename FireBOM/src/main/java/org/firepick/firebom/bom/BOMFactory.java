@@ -82,7 +82,7 @@ public class BOMFactory implements Runnable {
                     synchronized (bomQueue) {
                         BOM bom = bomQueue.poll();
                         if (bom != null) {
-                            if (!bom.resolve()) {
+                            if (!bom.resolve(0)) {
                                 logger.info("Requeing bom for resolve() {}", bom.getUrl());
                                 bomQueue.add(bom);
                             }
