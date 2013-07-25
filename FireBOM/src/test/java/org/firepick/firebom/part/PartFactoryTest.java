@@ -179,6 +179,8 @@ public class PartFactoryTest {
 
     @Test
     public void testMcMasterCarr() throws Exception {
+        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4")
+                .testId("5544t222").testPackageCost(2.21, 0). testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#91290A115")
                 .testId("91290A115").testPackageCost(6.39, 0).testPackageUnits(100).testUnitCost(.0639).testProject("www.mcmaster.com");
         new PartTester(partFactory, "http://www.mcmaster.com/#57485K63")

@@ -100,8 +100,12 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         return url;
     }
 
+    public URL normalizeUrl(URL url) {
+        return url;
+    }
+
     public synchronized Part setUrl(URL url) {
-        this.url = url;
+        this.url = normalizeUrl(url);
         return this;
     }
 
