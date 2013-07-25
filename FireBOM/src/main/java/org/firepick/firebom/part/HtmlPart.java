@@ -27,8 +27,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class HtmlPart extends Part {
+    protected static final Pattern startTitle = Pattern.compile("<title>");
+    protected static final Pattern endTitle = Pattern.compile("</title>");
 
     public HtmlPart(PartFactory partFactory, URL url) {
         super(partFactory, url);

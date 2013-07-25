@@ -239,4 +239,10 @@ public class PartFactoryTest {
                 .testId("HFSF5-2040-379").testPackageCost(3.79, 0).testPackageUnits(1).testUnitCost(3.79);
     }
 
+    @Test
+    public void testTrinityLabs() throws Exception {
+        new PartTester(partFactory, "http://trinitylabs.com/products/gt2-pulley-20-tooth")
+                .testId("254155135").testPackageCost(7.50,.5).testPackageUnits(1);
+    }
+
 }

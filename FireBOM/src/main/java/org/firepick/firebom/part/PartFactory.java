@@ -185,6 +185,8 @@ public class PartFactory implements Iterable<Part>, Runnable {
             part = new PonokoPart(this, url);
         } else if ("www.amazon.com".equalsIgnoreCase(host)) {
             part = new AmazonPart(this, url);
+        } else if ("trinitylabs.com".equalsIgnoreCase(host)) {
+            part = new TrinityLabsPart(this, url);
         } else if ("mock".equalsIgnoreCase(host)) {
             part = new MockPart(this, url);
         } else {
