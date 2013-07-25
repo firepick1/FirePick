@@ -172,8 +172,13 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     }
 
     protected URL parseLink(String value) throws MalformedURLException {
-        String url = PartFactory.getInstance().scrapeText(value, startLink, endLink);
-        return new URL(getUrl(), url);
+        String urlString = PartFactory.getInstance().scrapeText(value, startLink, endLink);
+        try {
+            return new URL(getUrl(), urlString);
+        }
+        catch (MalformedURLException e) {
+            throw new MalformedURLException(value);
+        }
     }
 
     protected Double parseQuantity(String value, Double defaultValue) {

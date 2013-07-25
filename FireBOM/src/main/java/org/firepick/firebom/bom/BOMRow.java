@@ -86,8 +86,6 @@ public class BOMRow extends PartUsage implements IRow {
             return part.getSourcePartUsage().getCost();
         } else if (part.isVendorPart()) {
             return part.getUnitCost();
-        } else if (isResolved()) {
-            throw new UnsupportedOperationException("Expected abstract part or vendor part:" + part.getUrl());
         }
 
         return 0;

@@ -118,7 +118,7 @@ public class PartFactoryTest {
                 .testId("B002BBIC6K").testPackageCost(24.95, 0).testPackageUnits(1).testUnitCost(24.95)
                 .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
-                .testId("B002PY7P4I").testPackageCost(12.16, .5).testPackageUnits(48)
+                .testId("B002PY7P4I").testPackageCost(12.16, 1).testPackageUnits(48)
                 .testTitle("Maxell LR6 AA Cell 48 Pack Box Battery (723443)").getPart();
         new PartTester(partFactory, "http://www.amazon.com/dp/B000A0PYQK/")
                 .testId("B000A0PYQK").testPackageCost(20.17, 0).testPackageUnits(1).testUnitCost(20.17)
@@ -222,7 +222,7 @@ public class PartFactoryTest {
                 .getPart();
         tester.testUnitCost(11.4173).testPackageCost(11.4173, .005).testPackageUnits(1);
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/X523")
-                .testId("X523").testPackageCost(.63, 0).testPackageUnits(1).testUnitCost(.63).testRequiredParts(0).testProject("FirePick");
+                .testId("X523").testPackageCost(1.175, 0).testPackageUnits(1).testUnitCost(1.175).testRequiredParts(2).testProject("FirePick");
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/F3WF")
                 .testId("F3WF").testUnitCost(0.0227).testPackageCost(0.0227, 0).testPackageUnits(1);
     }

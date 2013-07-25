@@ -83,26 +83,9 @@ public class BOMTest {
         assertFalse(part.isFresh());
 
         BOM bom = new BOM(url);
-        bom.resolve(100);
+        bom.resolve(5000);
         assertFalse(bom.isValid());
         new RelationPrinter().print(bom, System.out, null);
-    }
-
-    @Test
-    public void testAXB1() throws Exception {
-        URL url = new URL("https://github.com/firepick1/FirePick/wiki/AXB1");
-        BOM bom = new BOM(url);
-        assertEquals(1, bom.getRowCount());
-        assertFalse(bom.isResolved());
-        while (!bom.isResolved()) {
-            logger.info("bom.resolve()");
-            bom.resolve(0);
-        }
-        assertTrue(bom.isResolved());
-        assertEquals(4, bom.getRowCount());
-        new RelationPrinter().print(bom, System.out, null);
-        assertEquals("Total cost: ", 54.07, bom.totalCost(), 0.005d);
-        assertEquals("Part count:", 9, bom.partCount());
     }
 
     @Test
