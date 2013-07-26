@@ -33,8 +33,8 @@ public class HtmlPart extends Part {
     protected static final Pattern startTitle = Pattern.compile("<title>");
     protected static final Pattern endTitle = Pattern.compile("</title>");
 
-    public HtmlPart(PartFactory partFactory, URL url) {
-        super(partFactory, url);
+    public HtmlPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
+        super(partFactory, url, urlResolver);
 
     }
 

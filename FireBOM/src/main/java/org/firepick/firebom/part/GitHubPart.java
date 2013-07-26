@@ -31,8 +31,8 @@ public class GitHubPart extends HtmlPart {
     private static Pattern startTitle = Pattern.compile("<span class=\"octicon octicon-link\"></span></a>");
     private static Pattern endTitle = Pattern.compile("</h");
 
-    public GitHubPart(PartFactory partFactory, URL url) {
-        super(partFactory, url);
+    public GitHubPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
+        super(partFactory, url, urlResolver);
     }
 
     @Override

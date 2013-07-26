@@ -26,8 +26,8 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 
 public class MockPart extends Part {
-    public MockPart(PartFactory partFactory, URL url) {
-        super(partFactory, url);
+    public MockPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
+        super(partFactory, url, urlResolver);
         setVendor("mock");
         refreshFromRemote();
     }

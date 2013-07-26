@@ -73,7 +73,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         }
     }
 
-    public Part(PartFactory partFactory, URL url) {
+    public Part(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
         this(partFactory);
         setUrl(url);
     }

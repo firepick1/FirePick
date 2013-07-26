@@ -33,8 +33,8 @@ public class InventablesPart extends Part {
     private static Pattern startTitle = Pattern.compile("</label></td>\\s*<td>", Pattern.MULTILINE);
     private static Pattern endTitle = Pattern.compile("</td>");
 
-    public InventablesPart(PartFactory partFactory, URL url) {
-        super(partFactory, url);
+    public InventablesPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
+        super(partFactory, url, urlResolver);
     }
 
     @Override

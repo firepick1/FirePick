@@ -62,7 +62,7 @@ public class PartFactoryTest {
     @Test
     public void testTemporarilyBadPart() throws Exception {
         URL url = new URL("https://github.com/firepick1/FirePick/wiki/D7IH");
-        Part d7ihPart = new GitHubPart(PartFactory.getInstance(), url);
+        Part d7ihPart = new GitHubPart(PartFactory.getInstance(), url, new CachedUrlResolver());
         ProxyResolutionException dummyException = new ProxyResolutionException("dummy");
 
         // simulate a bad connection
@@ -179,10 +179,14 @@ public class PartFactoryTest {
 
     @Test
     public void testMcMasterCarr() throws Exception {
-        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4")
-                .testId("5544t222").testPackageCost(2.21, 0). testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#91290A115")
                 .testId("91290A115").testPackageCost(6.39, 0).testPackageUnits(100).testUnitCost(.0639).testProject("www.mcmaster.com");
+        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4#2")
+                .testId("5544t222").testPackageCost(4.28, 0). testPackageUnits(1);
+        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4")
+                .testId("5544t222").testPackageCost(2.21, 0). testPackageUnits(1);
+        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222")
+                .testId("5544t222").testPackageCost(2.21, 0). testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#57485K63")
                 .testId("57485K63").testPackageCost(1.55, 0).testPackageUnits(1).testUnitCost(1.55).testProject("www.mcmaster.com");
         new PartTester(partFactory, "http://www.mcmaster.com/#95601A295")

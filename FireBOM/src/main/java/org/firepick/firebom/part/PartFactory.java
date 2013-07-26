@@ -28,17 +28,12 @@ import org.firepick.firebom.exception.ProxyResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.util.Locale.US;
 
 public class PartFactory implements Iterable<Part>, Runnable {
     public static long MIN_REFRESH_INTERVAL = 10000;
@@ -46,6 +41,8 @@ public class PartFactory implements Iterable<Part>, Runnable {
     private static Thread worker;
     private static ConcurrentLinkedQueue<Part> refreshQueue = new ConcurrentLinkedQueue<Part>();
     private static PartFactory partFactory;
+
+    private CachedUrlResolver urlResolver;
     private String accept;
     private String language;
     private String userAgent;
@@ -58,11 +55,7 @@ public class PartFactory implements Iterable<Part>, Runnable {
     }
 
     protected PartFactory(Locale locale) {
-        if (locale == US) {
-            accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-            language = "en-US,en;q=0.8";
-            userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.94 Safari/537.36";
-        }
+        this.urlResolver = new CachedUrlResolver(locale);
     }
 
     public static PartFactory getInstance() {
@@ -81,48 +74,10 @@ public class PartFactory implements Iterable<Part>, Runnable {
     }
 
     public String urlTextContent(URL url) throws IOException {
-        urlRequests++;
-        Element cacheElement = getCache("URL-contents").get(url);
-        if (cacheElement == null) {
-            StringBuilder response;
-            try {
-                networkRequests++;
-                URLConnection connection = url.openConnection();
-                connection.setRequestProperty("Accept", accept);
-                connection.setRequestProperty("Accept-Language", language);
-                connection.setRequestProperty("User-Agent", userAgent);
-                InputStreamReader isr = new InputStreamReader(connection.getInputStream());
-                BufferedReader br = new BufferedReader(isr);
-                response = new StringBuilder();
-                String inputLine;
-
-                while ((inputLine = br.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                br.close();
-            }
-            catch (Exception e) {
-                cacheElement = new Element(url, e);
-                getCache("URL-contents").put(cacheElement);
-                throw new ProxyResolutionException(url.toString(), e);
-            }
-            String content = response.toString();
-            cacheElement = new Element(url, content);
-            getCache("URL-contents").put(cacheElement);
-            logger.info("urlTextContent => ({}B) {}", content.length(), url);
-            return content;
-        } else {
-            if (cacheElement.getObjectValue() instanceof IOException) {
-                logger.info("throwing cached exception for {}", url);
-                throw (IOException) cacheElement.getObjectValue();
-            } else {
-                logger.info("urlTextContent => (cached) {}", url);
-                return cacheElement.getObjectValue().toString();
-            }
-        }
+        return urlResolver.get(url);
     }
 
-    public String scrapeText(String value, Pattern start, Pattern end) {
+    public static String scrapeText(String value, Pattern start, Pattern end) {
         String result;
         Matcher startMatcher = start.matcher(value);
         if (!startMatcher.find()) {
@@ -145,11 +100,15 @@ public class PartFactory implements Iterable<Part>, Runnable {
     }
 
     public Part createPart(URL url) {
+        return createPart(url, urlResolver);
+    }
+
+    public Part createPart(URL url, CachedUrlResolver urlResolver) {
         Element cacheElement = getCache("org.firepick.firebom.part.Part").get(url);
         Part part;
         if (cacheElement == null) {
             String host = url.getHost();
-            part = createPartForHost(url, host);
+            part = createPartForHost(url, host, urlResolver);
             cacheElement = new Element(url, part);
             getCache("org.firepick.firebom.part.Part").put(cacheElement);
             refreshQueue.add(part);
@@ -167,30 +126,30 @@ public class PartFactory implements Iterable<Part>, Runnable {
         return part;
     }
 
-    private Part createPartForHost(URL url, String host) {
+    private Part createPartForHost(URL url, String host, CachedUrlResolver urlResolver) {
         Part part;
         if ("www.shapeways.com".equalsIgnoreCase(host)) {
-            part = new ShapewaysPart(this, url);
+            part = new ShapewaysPart(this, url, urlResolver);
         } else if ("shpws.me".equalsIgnoreCase(host)) {
-            part = new ShapewaysPart(this, url);
+            part = new ShapewaysPart(this, url, urlResolver);
         } else if ("www.mcmaster.com".equalsIgnoreCase(host)) {
-            part = new McMasterCarrPart(this, url);
+            part = new McMasterCarrPart(this, url, urlResolver);
         } else if ("github.com".equalsIgnoreCase(host)) {
-            part = new GitHubPart(this, url);
+            part = new GitHubPart(this, url, urlResolver);
         } else if ("us.misumi-ec.com".equalsIgnoreCase(host)) {
-            part = new MisumiPart(this, url);
+            part = new MisumiPart(this, url, urlResolver);
         } else if ("www.inventables.com".equalsIgnoreCase(host)) {
-            part = new InventablesPart(this, url);
+            part = new InventablesPart(this, url, urlResolver);
         } else if ("www.ponoko.com".equalsIgnoreCase(host)) {
-            part = new PonokoPart(this, url);
+            part = new PonokoPart(this, url, urlResolver);
         } else if ("www.amazon.com".equalsIgnoreCase(host)) {
-            part = new AmazonPart(this, url);
+            part = new AmazonPart(this, url, urlResolver);
         } else if ("trinitylabs.com".equalsIgnoreCase(host)) {
-            part = new TrinityLabsPart(this, url);
+            part = new TrinityLabsPart(this, url, urlResolver);
         } else if ("mock".equalsIgnoreCase(host)) {
-            part = new MockPart(this, url);
+            part = new MockPart(this, url, urlResolver);
         } else {
-            part = new HtmlPart(this, url);
+            part = new HtmlPart(this, url, urlResolver);
         }
         return part;
     }
@@ -208,10 +167,6 @@ public class PartFactory implements Iterable<Part>, Runnable {
             return highQuantity % 2 == 0 ? highQuantity : lowQuantity; // even number is more likely
         }
         return (int) Math.round(packageCost/unitCost);
-    }
-
-    public long getUrlRequests() {
-        return urlRequests;
     }
 
     @Override
@@ -236,10 +191,6 @@ public class PartFactory implements Iterable<Part>, Runnable {
             }
         }
         worker = null;
-    }
-
-    public long getNetworkRequests() {
-        return networkRequests;
     }
 
     public long getMinRefreshInterval() {

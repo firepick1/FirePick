@@ -29,28 +29,32 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 public class McMasterCarrPart extends Part {
+    private static Pattern startId = Pattern.compile("^");
+    private static Pattern endId = Pattern.compile("[^0-9a-zA-Z]|$");
     private static Pattern startPrice = Pattern.compile("\"PrceTxt\":\"");
     private static Pattern endPrice = Pattern.compile("\"");
     private static Pattern startPackageUnits = Pattern.compile("\"SellStdPkgQty\":");
     private static Pattern endPackageUnits = Pattern.compile(",");
     private static Pattern startDetail = Pattern.compile("data-mcm-attr-comp-itm-ids=\"");
-    private static Pattern endDetail = Pattern.compile(",");
+    private static Pattern endDetail = Pattern.compile("\"");
+    private static Pattern startDetailItem = Pattern.compile("#");
+    private static Pattern endDetailIndex = Pattern.compile("$");
     private static Pattern startDetailPrice = Pattern.compile("\"PrceTxt\":\"\\$");
     private static Pattern endDetailPrice = Pattern.compile("[^0-9.]*\"");
     private static String queryUrlTemplate =
             "http://www.mcmaster.com/WebParts/Ordering/InLnOrdWebPart/InLnOrdWebPart.aspx?cntnridtxt=InLnOrd_ItmBxRw_1_{PART}&partnbrtxt={PART}&multipartnbrind=false&partnbrslctdmsgcntxtnm=FullPrsnttn&autoslctdind=false";
     private static String detailQueryTemplate =
-            "http://www.mcmaster.com/WebParts/Content/ItmPrsnttnWebPart.aspx?partnbrtxt={PART}&attrnm=&attrval=&attrcompitmids=&cntnridtxt=MainContent&proddtllnkclickedInd=true&cntnrWdth=1680";
+            "http://www.mcmaster.com/WebParts/Content/ItmPrsnttnWebPart.aspx?partnbrtxt={PART}";
     private static String detailPriceQueryTemplate =
             "http://www.mcmaster.com/WebParts/Content/ItmPrsnttnDynamicDat.aspx?acttxt=dynamicdat&partnbrtxt={PART}&isinlnspec=true&attrCompIds={DETAIL}";
 
-    public McMasterCarrPart(PartFactory partFactory, URL url) {
-        super(partFactory, url);
+    public McMasterCarrPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
+        super(partFactory, url, urlResolver);
     }
 
     @Override
     public URL normalizeUrl(URL url) {
-        String normalizedUrl = url.toString().replaceAll("/=[a-z0-9]*", "");
+        String normalizedUrl = url.toString().replaceAll("/=[a-zA-Z0-9]*", "");
         try {
             return new URL(normalizedUrl);
         }
@@ -61,17 +65,28 @@ public class McMasterCarrPart extends Part {
 
     @Override
     protected void refreshFromRemote() throws IOException {
-        String partNum = getUrl().toString().replace("http://www.mcmaster.com/#", "");
+        CachedUrlResolver urlResolver = new CachedUrlResolver();
+        String urlRef = getUrl().getRef();
+        String partNum = PartFactory.getInstance().scrapeText(urlRef, startId, endId);
         String queryUrl = queryUrlTemplate.replaceAll("\\{PART\\}", partNum);
         String price = null;
-        String queryContent = PartFactory.getInstance().urlTextContent(new URL(queryUrl));
+        String queryContent = urlResolver.get(new URL(queryUrl));
         price = PartFactory.getInstance().scrapeText(queryContent, startPrice, endPrice);
         if (price != null && price.length() == 0) {
             String detailUrl = detailQueryTemplate.replaceAll("\\{PART\\}", partNum);
-            String detailContent = PartFactory.getInstance().urlTextContent(new URL(detailUrl));
-            String detail = PartFactory.getInstance().scrapeText(detailContent, startDetail, endDetail);
-            String detailPriceUrl = detailPriceQueryTemplate.replaceAll("\\{DETAIL\\}", detail).replaceAll("\\{PART\\}", partNum);
-            String detailPriceContent = PartFactory.getInstance().urlTextContent(new URL(detailPriceUrl));
+            urlResolver.setBasicAuth("firebom@firepick.org", "McSecret123");
+            urlResolver.setCookies("FAFSTRKPN=TRUE; PAGEPREF=HTML;");
+            String detailContent = urlResolver.get(new URL(detailUrl));
+            String [] details = PartFactory.getInstance().scrapeText(detailContent, startDetail, endDetail).split(",");
+            String detailItemString = PartFactory.getInstance().scrapeText(urlRef, startDetailItem, endDetailIndex);
+            int detailItem = 0;
+            try {
+                detailItem = Integer.parseInt(detailItemString) - 1;
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+            String detailPriceUrl = detailPriceQueryTemplate.replaceAll("\\{DETAIL\\}", details[detailItem]).replaceAll("\\{PART\\}", partNum);
+            String detailPriceContent = urlResolver.get(new URL(detailPriceUrl));
             price = PartFactory.getInstance().scrapeText(detailPriceContent, startDetailPrice, endDetailPrice);
         }
         if (price != null) {

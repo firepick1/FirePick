@@ -21,8 +21,6 @@ package org.firepick.firebom.part;
     For more information about FirePick Software visit http://firepick.org
  */
 
-import org.firepick.firebom.exception.ProxyResolutionException;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
@@ -31,8 +29,8 @@ public class PonokoPart extends Part {
     private static Pattern startPrice = Pattern.compile("class=\"price\">\\$");
     private static Pattern endPrice = Pattern.compile("<");
 
-    public PonokoPart(PartFactory partFactory, URL url)  {
-        super(partFactory, url);
+    public PonokoPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver)  {
+        super(partFactory, url, urlResolver);
     }
 
     @Override

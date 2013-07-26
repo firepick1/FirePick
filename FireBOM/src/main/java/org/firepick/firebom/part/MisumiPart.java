@@ -37,8 +37,8 @@ public class MisumiPart extends Part {
     private static final Pattern startPackage = Pattern.compile("\\]</font>");
     private static final Pattern endPackage = Pattern.compile(" pcs. per package");
 
-    public MisumiPart(PartFactory partFactory, URL url) {
-        super(partFactory, url);
+    public MisumiPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
+        super(partFactory, url, urlResolver);
     }
     
     @Override

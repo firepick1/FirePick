@@ -35,8 +35,8 @@ public class AmazonPart extends Part {
     private static Pattern startUnitCost = Pattern.compile("actualPriceExtraMessaging\">\\s*<span class=\"pricePerUnit\">\\(\\$", Pattern.MULTILINE);
     private static Pattern endUnitCost = Pattern.compile("/\\s?count");
 
-    public AmazonPart(PartFactory partFactory, URL url)  {
-        super(partFactory, url);
+    public AmazonPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver)  {
+        super(partFactory, url, urlResolver);
     }
 
     @Override

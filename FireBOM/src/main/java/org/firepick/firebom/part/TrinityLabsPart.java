@@ -31,8 +31,8 @@ public class TrinityLabsPart extends HtmlPart {
     private static final Pattern startId = Pattern.compile("name=\"id\" value=\"");
     private static final Pattern endId = Pattern.compile("\"");
 
-    public TrinityLabsPart(PartFactory partFactory, URL url) {
-        super(partFactory, url);
+    public TrinityLabsPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
+        super(partFactory, url, urlResolver);
     }
 
     @Override

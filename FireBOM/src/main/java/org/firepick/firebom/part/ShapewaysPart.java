@@ -31,8 +31,8 @@ public class ShapewaysPart extends Part {
     private static Pattern startPrice = Pattern.compile(" <div class=\"price\">\\$");
     private static Pattern endPrice = Pattern.compile("</div>");
 
-    public ShapewaysPart(PartFactory partFactory, URL url)  {
-        super(partFactory, url);
+    public ShapewaysPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver)  {
+        super(partFactory, url, urlResolver);
     }
 
     @Override
