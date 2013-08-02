@@ -88,13 +88,13 @@ public class PartFactoryTest {
 
     @Test
     public void testInventables() throws Exception {
-        Part part = new PartTester(partFactory, "https://www.inventables.com/technologies/makerslide#sample_33331")
-                .testId("25142-08").testPackageCost(9.82, 0).testPackageUnits(1).testUnitCost(9.82)
-                .testTitle("MAKERSLIDE 375mm").getPart();
-        BOM bom = new BOM(new URL("https://www.inventables.com/technologies/makerslide#sample_33331"));
+        Part part = new PartTester(partFactory, "https://www.inventables.com/technologies/makerslide#sample_33124")
+                .testId("25142-04").testPackageCost(32.84, 0).testPackageUnits(1)
+                .testTitle("MAKERSLIDE 1800mm").getPart();
+        BOM bom = new BOM(new URL("https://www.inventables.com/technologies/makerslide#sample_33124"));
         bom.resolve(0);
         BOMRow bomRow = (BOMRow) bom.iterator().next();
-        assertEquals(9.82d, bomRow.getUnitCost(), .005d);
+        assertEquals(32.84d, bomRow.getUnitCost(), .005d);
         new PartTester(partFactory, "https://www.inventables.com/technologies/ball-bearings")
                 .testId("25196-01").testPackageCost(1.5, 0).testPackageUnits(1).testUnitCost(1.5);
     }
@@ -115,10 +115,10 @@ public class PartFactoryTest {
         // Just update the prices and commit to GitHub
 
         new PartTester(partFactory, "http://www.amazon.com/Bearing-Shielded-Miniature-Bearings-VXB/dp/B002BBIC6K")
-                .testId("B002BBIC6K").testPackageCost(24.95, 0).testPackageUnits(1).testUnitCost(24.95)
+                .testId("B002BBIC6K").testPackageCost(24.95, 1).testPackageUnits(1)
                 .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
-                .testId("B002PY7P4I").testPackageCost(12.16, 1).testPackageUnits(48)
+                .testId("B002PY7P4I").testPackageCost(12.16, 2).testPackageUnits(48)
                 .testTitle("Maxell LR6 AA Cell 48 Pack Box Battery (723443)").getPart();
         new PartTester(partFactory, "http://www.amazon.com/dp/B000A0PYQK/")
                 .testId("B000A0PYQK").testPackageCost(20.17, 0).testPackageUnits(1).testUnitCost(20.17)
@@ -132,11 +132,21 @@ public class PartFactoryTest {
 
     @Test
     public void testMock() throws Exception {
-        Part part1 = new PartTester(partFactory, "http://mock?id:abc&cost:1.23&units:4&title:hello")
+        MockPart part1 = (MockPart) new PartTester(partFactory, "http://mock?id:abc&cost:1.23&units:4&title:hello")
                 .testId("abc").testPackageCost(1.23, 0).testPackageUnits(4).testTitle("hello").getPart();
         String encode1 = URLEncoder.encode("http://mock?id:abc&cost:1.23&units:4&title:hello", "utf-8");
         assertEquals("http%3A%2F%2Fmock%3Fid%3Aabc%26cost%3A1.23%26units%3A4%26title%3Ahello", encode1);
         assertEquals("http://mock?id:abc&cost:1.23&units:4&title:hello", URLDecoder.decode(encode1, "utf-8"));
+
+        // normal refresh() is ignored if too frequent
+        int refreshFromRemoteCount = part1.getRefreshFromRemoteCount();
+        part1.refresh();
+        assertEquals(refreshFromRemoteCount, part1.getRefreshFromRemoteCount());
+
+        // refresh() with previous error is not ignored
+        part1.setRefreshException(new ProxyResolutionException("test"));
+        part1.refresh();
+        assertEquals(refreshFromRemoteCount+1, part1.getRefreshFromRemoteCount());
 
         Part part2 = new PartTester(partFactory, "http://mock?id:def&cost:2.34&units:1&title:there")
                 .testId("def").testPackageCost(2.34, 0).testPackageUnits(1).testTitle("there").getPart();
@@ -166,6 +176,7 @@ public class PartFactoryTest {
                 .testRequiredPart(1, "def", 1, 2.34)
                 .testPackageCost(7.515, 0).getPart();
         assertEquals(part3, partS3R1R2.getSourcePart());
+
     }
 
     @Test
@@ -179,14 +190,14 @@ public class PartFactoryTest {
 
     @Test
     public void testMcMasterCarr() throws Exception {
+        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4#2")
+                .testId("5544T222").testPackageCost(4.28, 0). testPackageUnits(1);
+        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222")
+                .testId("5544T222").testPackageCost(2.21, 0). testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#91290A115")
                 .testId("91290A115").testPackageCost(6.39, 0).testPackageUnits(100).testUnitCost(.0639).testProject("www.mcmaster.com");
-        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4#2")
-                .testId("5544t222").testPackageCost(4.28, 0). testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4")
-                .testId("5544t222").testPackageCost(2.21, 0). testPackageUnits(1);
-        new PartTester(partFactory, "http://www.mcmaster.com/#5544t222")
-                .testId("5544t222").testPackageCost(2.21, 0). testPackageUnits(1);
+                .testId("5544T222").testPackageCost(2.21, 0). testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#57485K63")
                 .testId("57485K63").testPackageCost(1.55, 0).testPackageUnits(1).testUnitCost(1.55).testProject("www.mcmaster.com");
         new PartTester(partFactory, "http://www.mcmaster.com/#95601A295")
@@ -226,7 +237,7 @@ public class PartFactoryTest {
                 .testRequiredPart(4, "X50K", 1, 0.1932)
                 .testProject("FirePick")
                 .getPart();
-        tester.testUnitCost(11.4173).testPackageCost(11.4173, .005).testPackageUnits(1);
+        tester.testPackageCost(11.42, .05).testPackageUnits(1);
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/X523")
                 .testId("X523").testPackageCost(1.175, 0).testPackageUnits(1).testUnitCost(1.175).testRequiredParts(2).testProject("FirePick");
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/F3WF")

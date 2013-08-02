@@ -26,6 +26,8 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 
 public class MockPart extends Part {
+    private int refreshFromRemoteCount;
+
     public MockPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
         super(partFactory, url, urlResolver);
         setVendor("mock");
@@ -33,6 +35,7 @@ public class MockPart extends Part {
     }
 
     public void refreshFromRemote() {
+        refreshFromRemoteCount++;
         try {
             URL url = getUrl();
             PartFactory partFactory = PartFactory.getInstance();
@@ -71,4 +74,7 @@ public class MockPart extends Part {
     }
 
 
+    public int getRefreshFromRemoteCount() {
+        return refreshFromRemoteCount;
+    }
 }

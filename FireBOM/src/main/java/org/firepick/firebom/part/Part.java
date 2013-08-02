@@ -54,6 +54,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     private String vendor;
     private String project;
     private URL url;
+    private String contentHash;
     private Double packageCost;
     private Double packageUnits;
     private RefreshableTimer refreshableTimer;
@@ -294,7 +295,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
 
     @Override
     public final void refresh() {
-        if (isFresh() && getAge() < getMinRefeshInterval()) {
+        if (isFresh() && getAge() < getMinRefeshInterval() && getRefreshException() == null) {
             return; // avoid busy work
         }
         synchronized (refreshLock) {
@@ -452,5 +453,9 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
 
     public boolean isResolved() {
         return isResolved;
+    }
+
+    public String getContentHash() {
+        return contentHash;
     }
 }

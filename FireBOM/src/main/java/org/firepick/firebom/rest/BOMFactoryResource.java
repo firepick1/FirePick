@@ -7,6 +7,7 @@ import org.firepick.firebom.bom.HtmlRowVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -33,7 +34,21 @@ public class BOMFactoryResource {
         } catch(MalformedURLException e) {
             url = new URL("http://" + urlString);
         }
-        BOM bom = bomFactory.createBOM(url);
+        HttpSession session = request.getSession();
+        BOM bom = null;
+        if (urlString.equals(session.getAttribute("url"))) {
+            Object bomObj = session.getAttribute("BOM");
+            if (bomObj != null) {
+                bom = (BOM) bomObj;
+            }
+        } else {
+            session.setAttribute("url", urlString);
+            session.setAttribute("BOM", null);
+        }
+        if (bom == null) {
+            bom = bomFactory.createBOM(url);
+            session.setAttribute("BOM", bom);
+        }
 
         ByteArrayOutputStream bosHtml = new ByteArrayOutputStream();
         PrintStream psHtml = new PrintStream(bosHtml);
@@ -60,6 +75,7 @@ public class BOMFactoryResource {
                     psHtml.print("</button>");
                     psHtml.print("</div>");
                     psHtml.println();
+                    session.invalidate();
                 } else {
                     psHtml.println("<script>setTimeout(function() {location.reload();}, 1000)</script>");
                 }

@@ -190,7 +190,7 @@ public class BOMTest {
         assertTrue(bom.isResolved());
         assertEquals(6, bom.getRowCount());
         new RelationPrinter().print(bom, System.out, null);
-        assertEquals("Total cost: ", 11.422299999999998, bom.totalCost(), 0.005d);
+        assertEquals("Total cost: ", 11.42, bom.totalCost(), 0.05d);
         assertEquals("Part count:", 6, bom.partCount());
     }
 

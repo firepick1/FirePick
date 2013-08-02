@@ -105,7 +105,7 @@ public class PartFactoryResource {
         }
         psHtml.println("</ol>");
 
-        psHtml.println("<script>setTimeout(function() {location.reload();}, 1500)</script>");
+        psHtml.println("<script>setTimeout(function() {location.reload();}, 5000)</script>");
 
     }
 

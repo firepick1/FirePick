@@ -85,7 +85,7 @@ public class PartTester {
         PartUsage partUsage = partUsages.get(index);
         assertEquals(partId, partUsage.getPart().getId());
         assertEquals(partId + " quantity", quantity, partUsage.getQuantity(), 0);
-        assertEquals(partId + " unit cost", unitCost, partUsage.getPart().getUnitCost(), 0);
+        assertEquals(partId + " unit cost", unitCost, partUsage.getPart().getUnitCost(), 0.5d);
         return this;
     }
 

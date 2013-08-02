@@ -1079,8 +1079,8 @@ Here is an example of CacheManager level resource tuning, which will use up to 4
            maxEntriesLocalDisk="100000"
            eternal="false"
            diskSpoolBufferSizeMB="20"
-           timeToIdleSeconds="10"
-           timeToLiveSeconds="60"
+           timeToIdleSeconds="15"
+           timeToLiveSeconds="15"
            memoryStoreEvictionPolicy="LFU"
            transactionalMode="off">
         <persistence strategy="localTempSwap"/>
