@@ -226,6 +226,18 @@ public class PartFactoryTest {
     }
 
     @Test
+    public void testSparkfun() throws Exception {
+        PartTester tester = new PartTester(partFactory, "https://www.sparkfun.com/products/11868");
+        tester.testId("11868").testPackageUnits(1).testPackageCost(29.95, .5);
+    }
+
+    @Test
+    public void testAdafruit() throws Exception {
+        PartTester tester = new PartTester(partFactory, "http://www.adafruit.com/products/1367")
+            .testId("1367").testPackageUnits(1).testPackageCost(29.95, .5);
+    }
+
+    @Test
     public void testGitHub() throws Exception {
         PartTester tester = new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH");
         tester.testId("D7IH");

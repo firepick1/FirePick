@@ -41,7 +41,6 @@ public class PartFactory implements Iterable<Part>, Runnable {
     private static Thread worker;
     private static ConcurrentLinkedQueue<Part> refreshQueue = new ConcurrentLinkedQueue<Part>();
     private static PartFactory partFactory;
-
     private CachedUrlResolver urlResolver;
     private String accept;
     private String language;
@@ -65,18 +64,6 @@ public class PartFactory implements Iterable<Part>, Runnable {
         return partFactory;
     }
 
-    public List<Part> getRefreshQueue() {
-        List<Part> list = new ArrayList<Part>();
-        for (Part part : refreshQueue) {
-            list.add(part);
-        }
-        return Collections.unmodifiableList(list);
-    }
-
-    public String urlTextContent(URL url) throws IOException {
-        return urlResolver.get(url);
-    }
-
     public static String scrapeText(String value, Pattern start, Pattern end) {
         String result;
         Matcher startMatcher = start.matcher(value);
@@ -93,6 +80,33 @@ public class PartFactory implements Iterable<Part>, Runnable {
         result = value.substring(iStart, iEnd);
 
         return result;
+    }
+
+    public static int estimateQuantity(double packageCost, double unitCost) {
+        double highCost = unitCost + .005;
+        double lowCost = unitCost - .005;
+        int highQuantity = (int) Math.floor(packageCost / lowCost);
+        int lowQuantity = (int) Math.ceil(packageCost / highCost);
+
+        if (highQuantity == lowQuantity) {
+            return highQuantity;
+        }
+        if (highQuantity == lowQuantity + 1) {
+            return highQuantity % 2 == 0 ? highQuantity : lowQuantity; // even number is more likely
+        }
+        return (int) Math.round(packageCost / unitCost);
+    }
+
+    public List<Part> getRefreshQueue() {
+        List<Part> list = new ArrayList<Part>();
+        for (Part part : refreshQueue) {
+            list.add(part);
+        }
+        return Collections.unmodifiableList(list);
+    }
+
+    public String urlTextContent(URL url) throws IOException {
+        return urlResolver.get(url);
     }
 
     private Ehcache getCache(String name) {
@@ -148,25 +162,14 @@ public class PartFactory implements Iterable<Part>, Runnable {
             part = new TrinityLabsPart(this, url, urlResolver);
         } else if ("mock".equalsIgnoreCase(host)) {
             part = new MockPart(this, url, urlResolver);
+        } else if ("www.sparkfun.com".equalsIgnoreCase(host)) {
+            part = new SparkfunPart(this, url, urlResolver);
+        } else if ("www.adafruit.com".equalsIgnoreCase(host)) {
+            part = new AdafruitPart(this, url, urlResolver);
         } else {
             part = new HtmlPart(this, url, urlResolver);
         }
         return part;
-    }
-
-    public static int estimateQuantity(double packageCost, double unitCost) {
-        double highCost = unitCost + .005;
-        double lowCost = unitCost - .005;
-        int highQuantity = (int) Math.floor(packageCost / lowCost);
-        int lowQuantity = (int) Math.ceil(packageCost / highCost);
-
-        if (highQuantity == lowQuantity) {
-            return highQuantity;
-        }
-        if (highQuantity == lowQuantity + 1) {
-            return highQuantity % 2 == 0 ? highQuantity : lowQuantity; // even number is more likely
-        }
-        return (int) Math.round(packageCost/unitCost);
     }
 
     @Override
