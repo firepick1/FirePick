@@ -54,6 +54,6 @@ public class AdafruitPart extends HtmlPart {
 
     @Override
     public String getVendor() {
-        return "www.sparkfun.com";
+        return "www.adafruit.com";
     }
 }

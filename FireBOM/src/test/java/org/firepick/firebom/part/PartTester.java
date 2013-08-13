@@ -21,6 +21,8 @@ package org.firepick.firebom.part;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import junit.framework.Assert;
+
 import java.net.URL;
 import java.util.List;
 
@@ -40,6 +42,11 @@ public class PartTester {
 
     public PartTester testId(String id) {
         assertEquals(id, part.getId());
+        return this;
+    }
+
+    public PartTester testVendor(String value) {
+        Assert.assertEquals(value, part.getVendor());
         return this;
     }
 

@@ -114,8 +114,8 @@ public class PartFactoryTest {
         // Amazon prices fluctuate wildly, so expect the following to fail.
         // Just update the prices and commit to GitHub
 
-        new PartTester(partFactory, "http://www.amazon.com/Bearing-Shielded-Miniature-Bearings-VXB/dp/B002BBIC6K")
-                .testId("B002BBIC6K").testPackageCost(24.95, 1).testPackageUnits(1)
+        new PartTester(partFactory, "http://www.amazon.com/Bearing-Shielded-Miniature-Bearings-VXB/dp/B002BBFC2C")
+                .testId("B002BBFC2C").testPackageCost(24.95, 1).testPackageUnits(1)
                 .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
                 .testId("B002PY7P4I").testPackageCost(12.16, 2).testPackageUnits(48)
@@ -234,7 +234,7 @@ public class PartFactoryTest {
     @Test
     public void testAdafruit() throws Exception {
         PartTester tester = new PartTester(partFactory, "http://www.adafruit.com/products/1367")
-            .testId("1367").testPackageUnits(1).testPackageCost(29.95, .5);
+            .testVendor("www.adafruit.com").testId("1367").testPackageUnits(1).testPackageCost(29.95, .5);
     }
 
     @Test
@@ -249,7 +249,7 @@ public class PartFactoryTest {
                 .testRequiredPart(4, "X50K", 1, 0.1932)
                 .testProject("FirePick")
                 .getPart();
-        tester.testPackageCost(11.42, .05).testPackageUnits(1);
+        tester.testPackageCost(11.42, .5).testPackageUnits(1);
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/X523")
                 .testId("X523").testPackageCost(1.175, 0).testPackageUnits(1).testUnitCost(1.175).testRequiredParts(2).testProject("FirePick");
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/F3WF")
