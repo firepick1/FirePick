@@ -110,6 +110,19 @@ public class PartFactoryTest {
     }
 
     @Test
+    public void testDigiKey() throws Exception {
+        new PartTester(partFactory, "http://www.digikey.com/product-detail/en/PS1024ALRED/EG2025-ND/81539")
+                .testId("PS1024ALRED").testPackageCost(1.35, 0.5).testPackageUnits(1).testVendor("www.digikey.com")
+                .testTitle("SWITCH PUSH SPST-NO 3A 125V");
+        new PartTester(partFactory, "http://www.digikey.com/product-search/en?x=3&y=16&lang=en&site=us&KeyWords=PS1024ALRED")
+                .testId("PS1024ALRED").testPackageCost(1.35, 0.5).testPackageUnits(1).testVendor("www.digikey.com")
+                .testTitle("SWITCH PUSH SPST-NO 3A 125V");
+        new PartTester(partFactory, "http://www.digikey.com/product-detail/en/MCE4WT-A2-0000-000M01/MCE4WT-A2-0000-000M01DKR-ND/1985944")
+                .testId("MCE4WT-A2-0000-000M01").testPackageCost(16.59, 0.5).testPackageUnits(1).testVendor("www.digikey.com")
+                .testTitle("LED COOL WHITE 430 LUMEN SMD");
+    }
+
+    @Test
     public void testAmazon() throws Exception {
         // Amazon prices fluctuate wildly, so expect the following to fail.
         // Just update the prices and commit to GitHub
@@ -146,7 +159,7 @@ public class PartFactoryTest {
         // refresh() with previous error is not ignored
         part1.setRefreshException(new ProxyResolutionException("test"));
         part1.refresh();
-        assertEquals(refreshFromRemoteCount+1, part1.getRefreshFromRemoteCount());
+        assertEquals(refreshFromRemoteCount + 1, part1.getRefreshFromRemoteCount());
 
         Part part2 = new PartTester(partFactory, "http://mock?id:def&cost:2.34&units:1&title:there")
                 .testId("def").testPackageCost(2.34, 0).testPackageUnits(1).testTitle("there").getPart();
@@ -157,22 +170,22 @@ public class PartFactoryTest {
         String encode3 = URLEncoder.encode("http://mock?id:ghi&cost:4.56", "utf-8");
 
         Part partS1 = new PartTester(partFactory, "http://mock?id:abc-source&source:" + encode1)
-                .testId("abc-source").testPackageCost(1.23/4, 0).testPackageUnits(1).testTitle("hello").getPart();
+                .testId("abc-source").testPackageCost(1.23 / 4, 0).testPackageUnits(1).testTitle("hello").getPart();
         assertEquals(part1, partS1.getSourcePart());
 
         Part partR1R2 = new PartTester(partFactory, "http://mock?id:r1r2&require:" + encode1 + ":2&require:" + encode2)
                 .testId("r1r2")
                 .testRequiredParts(2)
-                .testRequiredPart(0, "abc", 2, 1.23/4d)
+                .testRequiredPart(0, "abc", 2, 1.23 / 4d)
                 .testRequiredPart(1, "def", 1, 2.34)
                 .testPackageCost(2.955, 0).getPart();
         assertEquals(null, partR1R2.getSourcePart());
 
-        Part partS3R1R2 = new PartTester(partFactory, "http://mock?id:s3r1r2&source:"+ encode3 + "&require:" + encode1 + ":2&require:" + encode2)
+        Part partS3R1R2 = new PartTester(partFactory, "http://mock?id:s3r1r2&source:" + encode3 + "&require:" + encode1 + ":2&require:" + encode2)
                 .testId("s3r1r2")
                 .testSourceCost(4.56)
                 .testRequiredParts(2)
-                .testRequiredPart(0, "abc", 2, 1.23/4d)
+                .testRequiredPart(0, "abc", 2, 1.23 / 4d)
                 .testRequiredPart(1, "def", 1, 2.34)
                 .testPackageCost(7.515, 0).getPart();
         assertEquals(part3, partS3R1R2.getSourcePart());
@@ -191,13 +204,13 @@ public class PartFactoryTest {
     @Test
     public void testMcMasterCarr() throws Exception {
         new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4#2")
-                .testId("5544T222").testPackageCost(4.28, 0). testPackageUnits(1);
+                .testId("5544T222").testPackageCost(4.28, 0).testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#5544t222")
-                .testId("5544T222").testPackageCost(2.21, 0). testPackageUnits(1);
+                .testId("5544T222").testPackageCost(2.21, 0).testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#91290A115")
                 .testId("91290A115").testPackageCost(6.39, 0).testPackageUnits(100).testUnitCost(.0639).testProject("www.mcmaster.com");
         new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4")
-                .testId("5544T222").testPackageCost(2.21, 0). testPackageUnits(1);
+                .testId("5544T222").testPackageCost(2.21, 0).testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#57485K63")
                 .testId("57485K63").testPackageCost(1.55, 0).testPackageUnits(1).testUnitCost(1.55).testProject("www.mcmaster.com");
         new PartTester(partFactory, "http://www.mcmaster.com/#95601A295")
@@ -234,7 +247,7 @@ public class PartFactoryTest {
     @Test
     public void testAdafruit() throws Exception {
         PartTester tester = new PartTester(partFactory, "http://www.adafruit.com/products/1367")
-            .testVendor("www.adafruit.com").testId("1367").testPackageUnits(1).testPackageCost(29.95, .5);
+                .testVendor("www.adafruit.com").testId("1367").testPackageUnits(1).testPackageCost(29.95, .5);
     }
 
     @Test
@@ -271,7 +284,7 @@ public class PartFactoryTest {
     @Test
     public void testTrinityLabs() throws Exception {
         new PartTester(partFactory, "http://trinitylabs.com/products/gt2-pulley-20-tooth")
-                .testId("254155135").testPackageCost(7.50,.5).testPackageUnits(1);
+                .testId("254155135").testPackageCost(7.50, .5).testPackageUnits(1);
     }
 
 }

@@ -41,22 +41,22 @@ public class PartTester {
     }
 
     public PartTester testId(String id) {
-        assertEquals(id, part.getId());
+        assertEquals("part id", id, part.getId());
         return this;
     }
 
     public PartTester testVendor(String value) {
-        Assert.assertEquals(value, part.getVendor());
+        Assert.assertEquals("vendor name", value, part.getVendor());
         return this;
     }
 
     public PartTester testUnitCost(double value) {
-        assertEquals(value, part.getUnitCost(), .005d);
+        assertEquals("part unit cost", value, part.getUnitCost(), .005d);
         return this;
     }
 
     public PartTester testPackageCost(double value, double tolerance) {
-        assertEquals(value, part.getPackageCost(), tolerance);
+        assertEquals("part package cost", value, part.getPackageCost(), tolerance);
         return this;
     }
 
@@ -66,24 +66,24 @@ public class PartTester {
     }
 
     public PartTester testPackageUnits(double value) {
-        assertEquals(value, part.getPackageUnits(), 0.005d);
+        assertEquals("part package units", value, part.getPackageUnits(), 0.005d);
         return this;
     }
 
     public PartTester testProject(String value) {
-        assertEquals(value, part.getProject());
+        assertEquals("project name for part", value, part.getProject());
         return this;
     }
 
     public PartTester testTitle(String value) {
-        assertEquals(value, part.getTitle());
+        assertEquals("part title", value, part.getTitle());
         return this;
     }
 
     public PartTester testRequiredParts(int value) {
         List<PartUsage> partUsages = part.getRequiredParts();
         assertNotNull(partUsages);
-        assertEquals(value, partUsages.size());
+        assertEquals("number of required parts", value, partUsages.size());
         return this;
     }
 

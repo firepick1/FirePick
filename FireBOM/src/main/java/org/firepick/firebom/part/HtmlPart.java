@@ -35,11 +35,13 @@ public class HtmlPart extends Part {
 
     public HtmlPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
         super(partFactory, url, urlResolver);
-
     }
 
     @Override
     protected void refreshFromRemoteContent(String content) throws IOException {
+        setId("UNSUPPORTED");
+        setVendor(getUrl().getHost());
+        setTitle("Unsupported FireBOM vendor http://bit.ly/16jPAOr");
         String[] ulParts = content.split("</ul>");
         List<String> newSourceList = null;
         PartUsage newSourcePartUsage = null;
