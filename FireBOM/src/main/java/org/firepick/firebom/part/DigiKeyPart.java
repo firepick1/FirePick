@@ -53,8 +53,4 @@ public class DigiKeyPart extends HtmlPart {
         }
     }
 
-    @Override
-    public String getVendor() {
-        return "www.digikey.com";
-    }
 }

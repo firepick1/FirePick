@@ -50,9 +50,4 @@ public class TrinityLabsPart extends HtmlPart {
             setId(id);
         }
     }
-
-    @Override
-    public String getVendor() {
-        return "trinitylabs.com";
-    }
 }

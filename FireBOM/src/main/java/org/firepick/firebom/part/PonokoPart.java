@@ -43,8 +43,4 @@ public class PonokoPart extends Part {
         setId(tokens[tokens.length-1]);
     }
 
-    @Override
-    public String getVendor() {
-        return "www.ponoko.com";
-    }
 }

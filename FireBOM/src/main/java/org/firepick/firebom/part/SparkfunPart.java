@@ -51,8 +51,4 @@ public class SparkfunPart extends HtmlPart {
         }
     }
 
-    @Override
-    public String getVendor() {
-        return "www.sparkfun.com";
-    }
 }

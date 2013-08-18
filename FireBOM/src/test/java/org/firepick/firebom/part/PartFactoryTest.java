@@ -102,9 +102,9 @@ public class PartFactoryTest {
     @Test
     public void testShapeways() throws Exception {
         new PartTester(partFactory, "http://shpws.me/nekC")
-                .testId("DL55").testPackageCost(4.28, 0).testPackageUnits(1).testUnitCost(4.28);
+                .testId("DL55").testPackageCost(4.28, 0).testPackageUnits(1).testUnitCost(4.28).testVendor("www.shapeways.com");
         new PartTester(partFactory, "http://www.shapeways.com/model/898050/dl55.html?li=productBox-search")
-                .testId("DL55").testPackageCost(4.28, 0).testPackageUnits(1).testUnitCost(4.28);
+                .testId("DL55").testPackageCost(4.28, 0).testPackageUnits(1).testUnitCost(4.28).testVendor("www.shapeways.com");
         new PartTester(partFactory, "http://www.shapeways.com/model/898050/dl55.html")
                 .testId("DL55").testPackageCost(4.28, 0).testPackageUnits(1).testUnitCost(4.28);
     }
@@ -128,7 +128,7 @@ public class PartFactoryTest {
         // Just update the prices and commit to GitHub
 
         new PartTester(partFactory, "http://www.amazon.com/Bearing-Shielded-Miniature-Bearings-VXB/dp/B002BBFC2C")
-                .testId("B002BBFC2C").testPackageCost(24.95, 1).testPackageUnits(1)
+                .testId("B002BBFC2C").testPackageCost(24.95, 1).testPackageUnits(1).testVendor("www.amazon.com")
                 .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
                 .testId("B002PY7P4I").testPackageCost(12.16, 2).testPackageUnits(48)
@@ -145,11 +145,13 @@ public class PartFactoryTest {
 
     @Test
     public void testMock() throws Exception {
-        MockPart part1 = (MockPart) new PartTester(partFactory, "http://mock?id:abc&cost:1.23&units:4&title:hello")
-                .testId("abc").testPackageCost(1.23, 0).testPackageUnits(4).testTitle("hello").getPart();
-        String encode1 = URLEncoder.encode("http://mock?id:abc&cost:1.23&units:4&title:hello", "utf-8");
-        assertEquals("http%3A%2F%2Fmock%3Fid%3Aabc%26cost%3A1.23%26units%3A4%26title%3Ahello", encode1);
-        assertEquals("http://mock?id:abc&cost:1.23&units:4&title:hello", URLDecoder.decode(encode1, "utf-8"));
+        String part1Url = "http://mock?id:abc&cost:1.23&units:4&title:hello&vendor:mockVendor";
+        MockPart part1 = (MockPart) new PartTester(partFactory, part1Url)
+                .testId("abc").testPackageCost(1.23, 0).testPackageUnits(4).testTitle("hello").testVendor("mockVendor")
+                .getPart();
+        String encode1 = URLEncoder.encode(part1Url, "utf-8");
+        assertEquals("http%3A%2F%2Fmock%3Fid%3Aabc%26cost%3A1.23%26units%3A4%26title%3Ahello%26vendor%3AmockVendor", encode1);
+        assertEquals(part1Url, URLDecoder.decode(encode1, "utf-8"));
 
         // normal refresh() is ignored if too frequent
         int refreshFromRemoteCount = part1.getRefreshFromRemoteCount();
@@ -162,7 +164,7 @@ public class PartFactoryTest {
         assertEquals(refreshFromRemoteCount + 1, part1.getRefreshFromRemoteCount());
 
         Part part2 = new PartTester(partFactory, "http://mock?id:def&cost:2.34&units:1&title:there")
-                .testId("def").testPackageCost(2.34, 0).testPackageUnits(1).testTitle("there").getPart();
+                .testId("def").testPackageCost(2.34, 0).testPackageUnits(1).testTitle("there").testVendor("mock").getPart();
         String encode2 = URLEncoder.encode("http://mock?id:def&cost:2.34&units:1&title:there", "utf-8");
 
         Part part3 = new PartTester(partFactory, "http://mock?id:ghi&cost:4.56")
@@ -170,7 +172,7 @@ public class PartFactoryTest {
         String encode3 = URLEncoder.encode("http://mock?id:ghi&cost:4.56", "utf-8");
 
         Part partS1 = new PartTester(partFactory, "http://mock?id:abc-source&source:" + encode1)
-                .testId("abc-source").testPackageCost(1.23 / 4, 0).testPackageUnits(1).testTitle("hello").getPart();
+                .testId("abc-source").testPackageCost(1.23 / 4, 0).testPackageUnits(1).testTitle("hello").testVendor("mockVendor").getPart();
         assertEquals(part1, partS1.getSourcePart());
 
         Part partR1R2 = new PartTester(partFactory, "http://mock?id:r1r2&require:" + encode1 + ":2&require:" + encode2)
@@ -196,15 +198,16 @@ public class PartFactoryTest {
     public void testPonoko() throws Exception {
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/A3B1")
                 .testId("A3B1").testPackageCost(2.2524, 0).testPackageUnits(1).testUnitCost(2.2524).testSourceCost(1)
-                .testRequiredParts(3).testProject("FirePick");
+                .testRequiredParts(3).testProject("FirePick").testVendor("www.ponoko.com");
         new PartTester(partFactory, "http://www.ponoko.com/design-your-own/products/a3b1-10268")
-                .testId("a3b1-10268").testPackageCost(12.00, 0).testPackageUnits(1).testUnitCost(12).testUnitCost(12);
+                .testId("a3b1-10268").testPackageCost(12.00, 0).testPackageUnits(1).testUnitCost(12).testUnitCost(12)
+                .testVendor("www.ponoko.com");
     }
 
     @Test
     public void testMcMasterCarr() throws Exception {
         new PartTester(partFactory, "http://www.mcmaster.com/#5544t222/=nrwpi4#2")
-                .testId("5544T222").testPackageCost(4.28, 0).testPackageUnits(1);
+                .testId("5544T222").testPackageCost(4.28, 0).testPackageUnits(1).testVendor("www.mcmaster.com");
         new PartTester(partFactory, "http://www.mcmaster.com/#5544t222")
                 .testId("5544T222").testPackageCost(2.21, 0).testPackageUnits(1);
         new PartTester(partFactory, "http://www.mcmaster.com/#91290A115")
@@ -241,7 +244,7 @@ public class PartFactoryTest {
     @Test
     public void testSparkfun() throws Exception {
         PartTester tester = new PartTester(partFactory, "https://www.sparkfun.com/products/11868");
-        tester.testId("11868").testPackageUnits(1).testPackageCost(29.95, .5);
+        tester.testId("11868").testPackageUnits(1).testPackageCost(29.95, .5).testVendor("www.sparkfun.com");
     }
 
     @Test
@@ -254,6 +257,7 @@ public class PartFactoryTest {
     public void testGitHub() throws Exception {
         PartTester tester = new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH");
         tester.testId("D7IH");
+        tester.testVendor("www.shapeways.com");
         tester.testRequiredParts(5);
         tester.testRequiredPart(0, "DB16", 1, 1.2475)
                 .testRequiredPart(1, "F525", 1, 0.11)
@@ -284,7 +288,13 @@ public class PartFactoryTest {
     @Test
     public void testTrinityLabs() throws Exception {
         new PartTester(partFactory, "http://trinitylabs.com/products/gt2-pulley-20-tooth")
-                .testId("254155135").testPackageCost(7.50, .5).testPackageUnits(1);
+                .testId("254155135").testPackageCost(7.50, .5).testPackageUnits(1).testVendor("trinitylabs.com");
     }
 
+    @Test
+    public void testUnsupportedVendor() throws Exception {
+        new PartTester(partFactory, "http://google.com")
+                .testId("UNSUPPORTED").testPackageCost(0,0).testPackageUnits(1).testVendor("google.com")
+                .testTitle("Unsupported FireBOM vendor http://bit.ly/16jPAOr");
+    }
 }

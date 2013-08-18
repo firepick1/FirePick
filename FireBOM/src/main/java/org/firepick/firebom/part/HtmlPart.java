@@ -40,7 +40,6 @@ public class HtmlPart extends Part {
     @Override
     protected void refreshFromRemoteContent(String content) throws IOException {
         setId("UNSUPPORTED");
-        setVendor(getUrl().getHost());
         setTitle("Unsupported FireBOM vendor http://bit.ly/16jPAOr");
         String[] ulParts = content.split("</ul>");
         List<String> newSourceList = null;

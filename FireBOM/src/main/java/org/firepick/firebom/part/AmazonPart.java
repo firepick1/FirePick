@@ -77,8 +77,4 @@ public class AmazonPart extends Part {
         }
     }
 
-    @Override
-    public String getVendor() {
-        return "www.amazon.com";
-    }
 }

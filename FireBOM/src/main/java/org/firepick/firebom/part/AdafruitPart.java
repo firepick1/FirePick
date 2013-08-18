@@ -51,9 +51,4 @@ public class AdafruitPart extends HtmlPart {
             setId(id);
         }
     }
-
-    @Override
-    public String getVendor() {
-        return "www.adafruit.com";
-    }
 }

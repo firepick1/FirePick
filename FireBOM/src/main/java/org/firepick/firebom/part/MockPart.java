@@ -30,7 +30,6 @@ public class MockPart extends Part {
 
     public MockPart(PartFactory partFactory, URL url, CachedUrlResolver urlResolver) {
         super(partFactory, url, urlResolver);
-        setVendor("mock");
         refreshFromRemote();
     }
 
@@ -64,6 +63,8 @@ public class MockPart extends Part {
                     setPackageCost(Double.parseDouble(value));
                 } else if (key.equals("units")) {
                     setPackageUnits(Double.parseDouble(value));
+                } else if (key.equals("vendor")) {
+                    setVendor(value);
                 }
             }
             requiredParts = newRequired;
