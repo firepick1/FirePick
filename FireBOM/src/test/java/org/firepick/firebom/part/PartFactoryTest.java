@@ -175,6 +175,13 @@ public class PartFactoryTest {
                 .testId("abc-source").testPackageCost(1.23 / 4, 0).testPackageUnits(1).testTitle("hello").testVendor("mockVendor").getPart();
         assertEquals(part1, partS1.getSourcePart());
 
+        String urlZZZ0 = "https://github.com/firepick1/FirePick/wiki/ZZZ0";
+        String encodeZZZ0 = URLEncoder.encode(urlZZZ0, "utf-8");
+        Part partZZZ0 = new PartTester(partFactory, urlZZZ0)
+                .testId("ZZZ0").testPackageUnits(1).testPackageCost(0, 0).testTitle("Nonexistent part").getPart();
+//        Part partSZZZ0 = new PartTester(partFactory, "http://mock?id:zzz0-source&source:" + encodeZZZ0)
+//                .testId("zzz0-source").testPackageCost(0, 0).testPackageUnits(1).testTitle("Nonexistent part").testVendor("github.com").getPart();
+
         Part partR1R2 = new PartTester(partFactory, "http://mock?id:r1r2&require:" + encode1 + ":2&require:" + encode2)
                 .testId("r1r2")
                 .testRequiredParts(2)
@@ -297,4 +304,5 @@ public class PartFactoryTest {
                 .testId("UNSUPPORTED").testPackageCost(0,0).testPackageUnits(1).testVendor("google.com")
                 .testTitle("Unsupported FireBOM vendor http://bit.ly/16jPAOr");
     }
+
 }
