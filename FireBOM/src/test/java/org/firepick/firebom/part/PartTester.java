@@ -65,6 +65,11 @@ public class PartTester {
         return this;
     }
 
+    public PartTester testSourcePackageUnits(double value) {
+        assertEquals("source package units", value, part.getSourcePartUsage().getQuantity(), .5d);
+        return this;
+    }
+
     public PartTester testPackageUnits(double value) {
         assertEquals("part package units", value, part.getPackageUnits(), 0.005d);
         return this;

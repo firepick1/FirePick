@@ -127,8 +127,11 @@ public class PartFactoryTest {
         // Amazon prices fluctuate wildly, so expect the following to fail.
         // Just update the prices and commit to GitHub
 
+        new PartTester(partFactory, "http://www.amazon.com/Studio-Pro-4-Inch-Copper-Foil/dp/B0044SAWLQ")
+                .testId("B0044SAWLQ").testPackageCost(10.98, 1).testPackageUnits(1)
+                .testTitle("Studio Pro 1/4-Inch Copper Foil").getPart();
         new PartTester(partFactory, "http://www.amazon.com/Bearing-Shielded-Miniature-Bearings-VXB/dp/B002BBFC2C")
-                .testId("B002BBFC2C").testPackageCost(24.95, 1).testPackageUnits(1).testVendor("www.amazon.com")
+                .testId("B002BBFC2C").testPackageCost(26.95, 2).testPackageUnits(1).testVendor("www.amazon.com")
                 .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
                 .testId("B002PY7P4I").testPackageCost(12.16, 2).testPackageUnits(48)
@@ -204,8 +207,8 @@ public class PartFactoryTest {
     @Test
     public void testPonoko() throws Exception {
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/A3B1")
-                .testId("A3B1").testPackageCost(2.2524, 0).testPackageUnits(1).testUnitCost(2.2524).testSourceCost(1)
-                .testRequiredParts(3).testProject("FirePick").testVendor("www.ponoko.com");
+                .testId("A3B1").testPackageCost(2.2524, .5d).testPackageUnits(1).testSourceCost(1)
+                .testRequiredParts(4).testProject("FirePick").testVendor("www.ponoko.com");
         new PartTester(partFactory, "http://www.ponoko.com/design-your-own/products/a3b1-10268")
                 .testId("a3b1-10268").testPackageCost(12.00, 0).testPackageUnits(1).testUnitCost(12).testUnitCost(12)
                 .testVendor("www.ponoko.com");
@@ -262,6 +265,10 @@ public class PartFactoryTest {
 
     @Test
     public void testGitHub() throws Exception {
+        new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/FIREPICK.1")
+                .testId("FIREPICK.1");
+        new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/ET06")
+                .testId("ET06").testPackageCost(0.003, .001d).testSourcePackageUnits(1d/3292).testProject("FirePick");
         PartTester tester = new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/D7IH");
         tester.testId("D7IH");
         tester.testVendor("www.shapeways.com");

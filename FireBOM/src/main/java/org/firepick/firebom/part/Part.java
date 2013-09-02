@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
 
 public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     private static Logger logger = LoggerFactory.getLogger(Part.class);
-    private static Pattern startLink = Pattern.compile("<a\\s+href=\"");
+    private static Pattern startLink = Pattern.compile("<a[^>]*href=\"");
     private static Pattern endLink = Pattern.compile("\"");
 
     protected List<String> sourceList;
