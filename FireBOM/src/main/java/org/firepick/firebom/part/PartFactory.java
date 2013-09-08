@@ -168,6 +168,8 @@ public class PartFactory implements Iterable<Part>, Runnable {
             part = new AdafruitPart(this, url, urlResolver);
         } else if ("www.digikey.com".equalsIgnoreCase(host)) {
             part = new DigiKeyPart(this, url, urlResolver);
+        } else if ("synthetos.myshopify.com".equalsIgnoreCase(host)) {
+            part = new SynthetosPart(this, url, urlResolver);
         } else {
             part = new HtmlPart(this, url, urlResolver);
         }

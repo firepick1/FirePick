@@ -131,7 +131,7 @@ public class PartFactoryTest {
                 .testId("B0044SAWLQ").testPackageCost(10.98, 1).testPackageUnits(1)
                 .testTitle("Studio Pro 1/4-Inch Copper Foil").getPart();
         new PartTester(partFactory, "http://www.amazon.com/Bearing-Shielded-Miniature-Bearings-VXB/dp/B002BBFC2C")
-                .testId("B002BBFC2C").testPackageCost(26.95, 2).testPackageUnits(1).testVendor("www.amazon.com")
+                .testId("B002BBFC2C").testPackageCost(28, 3).testPackageUnits(1).testVendor("www.amazon.com")
                 .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
                 .testId("B002PY7P4I").testPackageCost(12.16, 2).testPackageUnits(48)
@@ -299,6 +299,11 @@ public class PartFactoryTest {
                 .testId("HFSF5-2040-379").testPackageCost(3.79, 0).testPackageUnits(1).testUnitCost(3.79);
     }
 
+    @Test
+    public void testSynthetos() throws Exception {
+        new PartTester(partFactory, "https://synthetos.myshopify.com/products/tinyg")
+                .testId("tinyg").testPackageCost(129.99, 2).testPackageUnits(1).testVendor("www.synthetos.com");
+    }
     @Test
     public void testTrinityLabs() throws Exception {
         new PartTester(partFactory, "http://trinitylabs.com/products/gt2-pulley-20-tooth")
