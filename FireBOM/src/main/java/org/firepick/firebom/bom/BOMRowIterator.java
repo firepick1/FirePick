@@ -22,16 +22,22 @@ package org.firepick.firebom.bom;
  */
 
 import org.firepick.firebom.IPartComparable;
-import org.firepick.firebom.bom.BOMRow;
+import org.firepick.firebom.part.VendorComparator;
 import org.firepick.relation.IRow;
 
 import java.util.Iterator;
+import java.util.TreeSet;
 
 public class BOMRowIterator implements Iterator<IRow> {
-    private Iterator<IPartComparable> iterator;
+    private Iterator<BOMRow> iterator;
+
 
     public BOMRowIterator(Iterator<IPartComparable> iterator) {
-        this.iterator = iterator;
+        TreeSet<BOMRow> treeSet = new TreeSet(new VendorComparator());
+        while (iterator.hasNext()) {
+            treeSet.add((BOMRow) iterator.next());
+        }
+        this.iterator = treeSet.iterator();
     }
 
     @Override
@@ -41,7 +47,7 @@ public class BOMRowIterator implements Iterator<IRow> {
 
     @Override
     public IRow next() {
-        return (BOMRow) iterator.next();
+        return iterator.next();
     }
 
     @Override

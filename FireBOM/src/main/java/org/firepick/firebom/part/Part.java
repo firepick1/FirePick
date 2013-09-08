@@ -45,7 +45,6 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     private static Logger logger = LoggerFactory.getLogger(Part.class);
     private static Pattern startLink = Pattern.compile("<a[^>]*href=\"");
     private static Pattern endLink = Pattern.compile("\"");
-
     protected List<String> sourceList;
     protected List<PartUsage> requiredParts;
     private PartUsage sourcePartUsage;
@@ -82,7 +81,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     public synchronized String getId() {
         String value = id;
         if (value == null) {
-            if (sourcePartUsage != null  && sourcePartUsage.getPart().isResolved()) {
+            if (sourcePartUsage != null && sourcePartUsage.getPart().isResolved()) {
                 value = sourcePartUsage.getPart().getId();
             }
         }
@@ -101,13 +100,13 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         return url;
     }
 
-    public URL normalizeUrl(URL url) {
-        return url;
-    }
-
     public synchronized Part setUrl(URL url) {
         this.url = normalizeUrl(url);
         return this;
+    }
+
+    public URL normalizeUrl(URL url) {
+        return url;
     }
 
     public synchronized URL getSourceUrl() {
@@ -193,11 +192,11 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
         if (phrases.length > 1) {
             String quantity = phrases[phrases.length - 1].split("\\)")[0];
             try {
-                String [] fraction = quantity.split("/");
+                String[] fraction = quantity.split("/");
                 if (fraction.length > 1) {
                     double numerator = Double.parseDouble(fraction[0]);
                     double denominator = Double.parseDouble(fraction[1]);
-                    result = numerator/denominator;
+                    result = numerator / denominator;
                 } else {
                     result = Double.parseDouble(quantity);
                 }
@@ -236,8 +235,9 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
 
     @Override
     public int compareTo(IPartComparable that) {
+        Part thatPart = that.getPart();
         URL url1 = getUrl();
-        URL url2 = that.getPart().getUrl();
+        URL url2 = thatPart.getUrl();
         int cmp = url1.toString().compareTo(url2.toString());
         return cmp;
     }
@@ -274,6 +274,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     /**
      * A simple assembly that consists solely of its constituent required parts.
      * Simple asseblies have no individual cost.
+     *
      * @return true if this is an assembly
      */
     public boolean isAssembly() {
@@ -287,6 +288,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
     /**
      * An abstract part is one that defines the function of a part and
      * provides one or more sources for that part. Think of this as a "hardware interface or api"
+     *
      * @return
      */
     public boolean isAbstractPart() {
@@ -338,7 +340,7 @@ public class Part implements IPartComparable, Serializable, IRefreshableProxy {
 
     public Part refreshAll() {
         refresh();
-        for (PartUsage partUsage: requiredParts) {
+        for (PartUsage partUsage : requiredParts) {
             Part part = partUsage.getPart();
             part.refreshAll();
         }

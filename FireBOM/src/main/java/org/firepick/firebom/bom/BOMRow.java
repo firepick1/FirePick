@@ -21,6 +21,7 @@ package org.firepick.firebom.bom;
     For more information about FirePick Software visit http://firepick.org
  */
 
+import org.firepick.firebom.IPartComparable;
 import org.firepick.firebom.exception.ProxyResolutionException;
 import org.firepick.firebom.part.Part;
 import org.firepick.firebom.part.PartUsage;
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.Format;
 
-public class BOMRow extends PartUsage implements IRow {
+public class BOMRow extends PartUsage implements IRow, IPartComparable {
     private static Logger logger = LoggerFactory.getLogger(BOMRow.class);
 
     private BOM bom;
