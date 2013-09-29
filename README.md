@@ -8,4 +8,4 @@ GitHub repository and wiki for
 
 Greetings!
 
-[See the latest news](https://github.com/firepick1/FirePick/News)
+[See the latest news](https://github.com/firepick1/FirePick/wiki/News)
