@@ -33,11 +33,8 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -47,7 +44,6 @@ import static java.util.Locale.US;
 
 public class CachedUrlResolver {
     private static Logger logger = LoggerFactory.getLogger(CachedUrlResolver.class);
-
     private String accept;
     private String language;
     private String userAgent;
@@ -73,13 +69,17 @@ public class CachedUrlResolver {
     }
 
     private static void trustAll() {
-        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                 return null;
             }
-            public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-            public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-        } };
+
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        }};
         final SSLContext sc;
         try {
             sc = SSLContext.getInstance("SSL");
@@ -102,19 +102,29 @@ public class CachedUrlResolver {
         Element cacheElement = getCache("URL-contents").get(url);
         if (cacheElement == null) {
             StringBuilder response;
+            InputStreamReader isr;
+            HttpURLConnection connection;
             try {
                 networkRequests++;
-                URLConnection connection = url.openConnection();
-                connection.setRequestProperty("Accept", accept);
-                connection.setRequestProperty("Accept-Language", language);
-                connection.setRequestProperty("User-Agent", userAgent);
-                if (cookies != null) {
-                    connection.setRequestProperty("Cookie", cookies);
-                }
-                if (basicAuth != null) {
-                    connection.setRequestProperty("Authentication", basicAuth);
-                }
-                InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+                boolean followRedirect;
+                int nFollows = 0;
+                do {
+                    connection = createHttpURLConnection(url);
+                    isr = new InputStreamReader(connection.getInputStream());
+                    int responseCode = connection.getResponseCode();
+                    switch (responseCode) {
+                        case HttpURLConnection.HTTP_MOVED_PERM:
+                        case HttpURLConnection.HTTP_MOVED_TEMP: {
+                            String location = connection.getHeaderField("Location");
+                            url = new URL(location);
+                            followRedirect = true;
+                            break;
+                        }
+                        default:
+                            followRedirect = false;
+                            break;
+                    }
+                } while (followRedirect && (++nFollows <= 3));
                 BufferedReader br = new BufferedReader(isr);
                 response = new StringBuilder();
                 String inputLine;
@@ -143,6 +153,20 @@ public class CachedUrlResolver {
                 return cacheElement.getObjectValue().toString();
             }
         }
+    }
+
+    private HttpURLConnection createHttpURLConnection(URL url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestProperty("Accept", accept);
+        connection.setRequestProperty("Accept-Language", language);
+        connection.setRequestProperty("User-Agent", userAgent);
+        if (cookies != null) {
+            connection.setRequestProperty("Cookie", cookies);
+        }
+        if (basicAuth != null) {
+            connection.setRequestProperty("Authentication", basicAuth);
+        }
+        return connection;
     }
 
     public String scrapeText(String value, Pattern start, Pattern end) {

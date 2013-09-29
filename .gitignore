@@ -8,6 +8,14 @@
 *.o
 *.so
 
+# 
+# BINARY #
+#
+*.jpg
+*.png
+*.gif
+*.bmp
+
 # DIRECTORIES #
 ###############
 .idea/

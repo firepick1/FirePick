@@ -101,6 +101,13 @@ public class PartFactoryTest {
 
     @Test
     public void testShapeways() throws Exception {
+// Strange how this doesn't work... SSL is supported
+        new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/C8S1")
+                .testId("C8S1").testPackageCost(4.745, 0).testPackageUnits(1).testUnitCost(4.745).testVendor("www.shapeways.com");
+        new PartTester(partFactory, "http://shpws.me/ph25")
+                .testId("C8S1").testPackageCost(9.49, 0).testPackageUnits(1).testUnitCost(9.49).testVendor("www.shapeways.com");
+        new PartTester(partFactory, "http://www.shapeways.com/model/1363207/c8s1.html")
+                .testId("C8S1").testPackageCost(9.49, 0).testPackageUnits(1).testUnitCost(9.49).testVendor("www.shapeways.com");
         new PartTester(partFactory, "http://shpws.me/nekC")
                 .testId("DL55").testPackageCost(4.28, 0).testPackageUnits(1).testUnitCost(4.28).testVendor("www.shapeways.com");
         new PartTester(partFactory, "http://www.shapeways.com/model/898050/dl55.html?li=productBox-search")
@@ -134,10 +141,11 @@ public class PartFactoryTest {
                 .testId("B002BBFC2C").testPackageCost(28, 3).testPackageUnits(1).testVendor("www.amazon.com")
                 .testTitle("20 Bearing 625ZZ 5x16x5 Shielded Miniature Ball Bearings VXB Brand");
         new PartTester(partFactory, "http://www.amazon.com/Maxell-Cell-Pack-Battery-723443/dp/B002PY7P4I/ref=sr_1_1?ie=UTF8&qid=1373161758&sr=8-1&keywords=aa+batteries")
-                .testId("B002PY7P4I").testPackageCost(12.16, 2).testPackageUnits(48)
+                .testId("B002PY7P4I").testPackageCost(14.00, 2.50).testPackageUnits(48)
+            //    .testId("B002PY7P4I").testPackageCost(12.16, 2).testPackageUnits(48)
                 .testTitle("Maxell LR6 AA Cell 48 Pack Box Battery (723443)").getPart();
         new PartTester(partFactory, "http://www.amazon.com/dp/B000A0PYQK/")
-                .testId("B000A0PYQK").testPackageCost(20.17, 0).testPackageUnits(1).testUnitCost(20.17)
+                .testId("B000A0PYQK").testPackageCost(18.0, 2).testPackageUnits(1)
                 .testTitle("Tetra Whisper Air Pumps (Non-UL)").getPart();
     }
 
@@ -265,6 +273,8 @@ public class PartFactoryTest {
 
     @Test
     public void testGitHub() throws Exception {
+        new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/DX17")
+                .testId("DX17");
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/FIREPICK.1")
                 .testId("FIREPICK.1");
         new PartTester(partFactory, "https://github.com/firepick1/FirePick/wiki/ET06")
@@ -276,7 +286,7 @@ public class PartFactoryTest {
         tester.testRequiredPart(0, "DB16", 1, 1.2475)
                 .testRequiredPart(1, "F525", 1, 0.11)
                 .testRequiredPart(2, "F510", 1, 0.0793)
-                .testRequiredPart(3, "F50N", 1, 0.0173)
+                .testRequiredPart(3, "F50N", 2, 0.0173)
                 .testRequiredPart(4, "X50K", 1, 0.1932)
                 .testProject("FirePick")
                 .getPart();

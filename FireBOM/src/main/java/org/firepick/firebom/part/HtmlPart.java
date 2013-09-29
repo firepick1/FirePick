@@ -24,6 +24,7 @@ package org.firepick.firebom.part;
 import org.firepick.firebom.exception.ProxyResolutionException;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,11 +72,20 @@ public class HtmlPart extends Part {
                 List<String> requiredItems = parseListItemStrings(ulPart);
                 newRequiredParts = new ArrayList<PartUsage>();
                 for (String required : requiredItems) {
-                    URL link = parseLink(required);
-                    double quantity = parseQuantity(required, 1d);
-                    Part part = PartFactory.getInstance().createPart(link);
-                    PartUsage partUsage = new PartUsage(part, quantity);
-                    newRequiredParts.add(partUsage);
+                    try {
+                        URL link = parseLink(required);
+                        double quantity = parseQuantity(required, 1d);
+                        Part part = PartFactory.getInstance().createPart(link);
+                        PartUsage partUsage = new PartUsage(part, quantity);
+                        newRequiredParts.add(partUsage);
+                    }
+                    catch (MalformedURLException ex) {
+                        if (required.startsWith("http")) {
+                            throw ex;
+                        } else {
+                            // skip this part
+                        }
+                    }
                 }
             }
         }
