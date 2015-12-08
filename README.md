@@ -17,6 +17,7 @@ There are multiple versions of FirePick Delta.
 
 1.  Tin Whiskers FirePick Delta Beta Kit (reference design in this repository).
 2.  [LooseCanon FirePick Delta](https://github.com/firepick1/FPD-LooseCanon)
-3.  Tin Whiskers FPD "metal machine" 
+3.  Tin Whiskers FPD "metal machine" (prototype)
+4.  Countless individual varieties (see [newsgroup](https://groups.google.com/forum/#!forum/firepick))
 
 For current information, [see FirePick Google Group](https://groups.google.com/forum/#!forum/firepick)
